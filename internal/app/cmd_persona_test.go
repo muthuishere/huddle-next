@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -104,7 +105,7 @@ func TestPersonaNewImportIngest(t *testing.T) {
 		t.Fatalf("ingest: %v\n%s", err, out)
 	}
 	ev := filepath.Join(home, "evidence", "alice", "evidence.ndjson")
-	if st, err := os.Stat(ev); err != nil || st.Mode().Perm() != 0o600 {
+	if st, err := os.Stat(ev); err != nil || (runtime.GOOS != "windows" && st.Mode().Perm() != 0o600) {
 		t.Fatalf("evidence file: %v %v", err, st)
 	}
 	if out, err = personaRun(t, "", "ingest", "--schema"); err != nil || !strings.Contains(out, `"required": ["text"]`) {

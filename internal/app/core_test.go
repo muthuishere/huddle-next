@@ -22,6 +22,7 @@ func coreEnv(t testing.TB) string {
 	tmp := t.TempDir()
 	t.Setenv("HUDDLE_HOME", filepath.Join(tmp, "huddle-home"))
 	t.Setenv("HOME", filepath.Join(tmp, "home"))
+	t.Setenv("USERPROFILE", filepath.Join(tmp, "home"))
 	root := filepath.Join(tmp, "proj")
 	mustWrite(t, filepath.Join(root, ".git", "HEAD"), "ref: refs/heads/main\n")
 	return root

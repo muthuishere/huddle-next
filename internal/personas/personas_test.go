@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"testing"
@@ -369,7 +370,7 @@ func TestIngestRedactsAndIsPrivate(t *testing.T) {
 		t.Errorf("stored evidence not redacted:\n%s", b)
 	}
 	st, _ := os.Stat(res.Path)
-	if st.Mode().Perm() != 0o600 {
+	if runtime.GOOS != "windows" && st.Mode().Perm() != 0o600 {
 		t.Errorf("evidence perms = %v, want 0600", st.Mode().Perm())
 	}
 	if _, err := Ingest("alice-reviewer", "notes.md", []byte("# Notes\nplain markdown"), "", time.Now()); err != nil {

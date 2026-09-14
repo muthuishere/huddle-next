@@ -20,7 +20,7 @@ jobs:
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
           go-version-file: go.mod
-          cache: true
+          cache-dependency-path: go.mod
       - run: go vet ./...
       - run: go test -short ./...
       - name: Skill byte budgets
@@ -38,7 +38,7 @@ jobs:
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
           go-version-file: go.mod
-          cache: true
+          cache-dependency-path: go.mod
       - name: gofmt
         run: test -z "$(gofmt -l cmd internal assets skills)" || { gofmt -l cmd internal assets skills; exit 1; }
       - name: POSIX sh syntax of npm scripts
@@ -60,7 +60,7 @@ jobs:
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
           go-version-file: go.mod
-          cache: true
+          cache-dependency-path: go.mod
       - uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6
         with:
           distribution: goreleaser

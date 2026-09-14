@@ -23,6 +23,7 @@ func artTestEnv(t *testing.T) string {
 	tmp := t.TempDir()
 	t.Setenv("HUDDLE_HOME", filepath.Join(tmp, "huddle-home"))
 	t.Setenv("HOME", filepath.Join(tmp, "home"))
+	t.Setenv("USERPROFILE", filepath.Join(tmp, "home"))
 	for _, name := range gates.AgentEnvVars { // tests may run inside an agent session
 		t.Setenv(name, "")
 	}
