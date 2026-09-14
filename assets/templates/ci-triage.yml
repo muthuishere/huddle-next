@@ -1,0 +1,34 @@
+# Drafted by `huddle ci draft triage`. Review before committing.
+# Read-only failure triage: Claude reads the failed run's logs and comments a diagnosis.
+# It cannot push, merge, or edit files (read-only tools, contents: read).
+name: agent-failure-triage
+on:
+  workflow_run:
+    workflows: ["{{workflow}}"]
+    types: [completed]
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+jobs:
+  triage:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Fetch failed logs
+        run: gh run view ${{ github.event.workflow_run.id }} --log-failed > failed.log || true
+      - name: Triage with claude -p (read-only)
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          claude -p "Read failed.log and the code it points at. Report the most likely cause, the file and line, and the smallest fix. Do not change any files." \
+            --allowedTools "Read,Grep,Glob" > triage.md
+      - name: Comment on the pull request
+        run: |
+          pr=$(gh pr list --search "${{ github.event.workflow_run.head_sha }}" --json number --jq '.[0].number')
+          if [ -n "$pr" ]; then gh pr comment "$pr" --body-file triage.md; else cat triage.md; fi

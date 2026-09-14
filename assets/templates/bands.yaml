@@ -1,0 +1,13 @@
+# bands.yaml — deterministic control bands (huddle bands check)
+metric: {{slug}}
+baseline:
+  window: 20        # first N points of the series form the baseline
+  # mean: 120       # or give the baseline directly
+  # stddev: 8
+rules:
+  direction: both   # up | down | both
+  min_points: 5
+tiers:
+  log: 1            # >= 1 sigma: log it
+  diagnose: 2       # >= 2 sigma: diagnose
+  breach: 3         # >= 3 sigma: draft an intent

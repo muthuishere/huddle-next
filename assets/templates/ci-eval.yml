@@ -1,0 +1,41 @@
+# Drafted by `huddle eval ci-draft`. Review before committing.
+name: agent-evals
+on:
+  pull_request:
+    paths: &eval_paths
+      - "CLAUDE.md"
+      - "AGENTS.md"
+      - ".claude/**"
+      - "evals/**"
+  push:
+    branches: [{{branch}}]
+    paths: *eval_paths
+permissions:
+  contents: read
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    env:
+      EVAL_THRESHOLD: "{{threshold}}"
+      # Evals need an authenticated runner. Without it the result is "unverified", never PASS.
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check runner is authenticated
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::warning::eval result: unverified (no authenticated runner) — add the ANTHROPIC_API_KEY secret"
+            exit 1
+          fi
+      - name: Run evals
+        # Contract: the command writes eval-results.json as {"passed": N, "total": M}.
+        run: |
+          {{command}}
+      - name: Enforce pass rate
+        run: |
+          passed=$(jq -r '.passed' eval-results.json)
+          total=$(jq -r '.total' eval-results.json)
+          if [ "$total" -le 0 ]; then echo "::error::no evals ran — result unverified"; exit 1; fi
+          rate=$(awk -v p="$passed" -v t="$total" 'BEGIN { printf "%.4f", p / t }')
+          echo "pass rate $rate (threshold $EVAL_THRESHOLD)"
+          awk -v r="$rate" -v th="$EVAL_THRESHOLD" 'BEGIN { exit !(r >= th) }' || { echo "::error::pass rate $rate below $EVAL_THRESHOLD"; exit 1; }

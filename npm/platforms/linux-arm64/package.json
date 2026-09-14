@@ -1,0 +1,21 @@
+{
+  "name": "@muthuishere/huddle-linux-arm64",
+  "version": "0.1.0",
+  "description": "huddle prebuilt binary for linux-arm64",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/muthuishere-agent-skills/huddle.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "files": [
+    "bin/"
+  ]
+}

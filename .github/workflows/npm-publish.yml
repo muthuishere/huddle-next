@@ -1,0 +1,52 @@
+name: npm publish
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - name: Test
+        run: |
+          go vet ./...
+          go test -short ./...
+
+      - name: Check npm version matches tag
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          v=$(node -p "require('./npm/package.json').version")
+          test "$tag" = "$v" || { echo "tag v$tag != npm/package.json $v — run: task release:version VERSION=$tag"; exit 1; }
+
+      - name: Build release binaries for npm packages
+        uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --clean --skip=publish
+
+      - name: Publish npm packages with trusted publishing
+        run: scripts/npm-publish-oidc.sh

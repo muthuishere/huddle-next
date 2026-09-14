@@ -1,0 +1,58 @@
+version: 2
+
+project_name: huddle
+
+builds:
+  - id: huddle
+    main: ./cmd/huddle
+    binary: huddle
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X github.com/muthuishere/huddle/internal/version.Version={{ .Version }} -X github.com/muthuishere/huddle/internal/version.Commit={{ .ShortCommit }} -X github.com/muthuishere/huddle/internal/version.Date={{ .Date }}
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    hooks:
+      post:
+        - sh -c 'mkdir -p npm/platforms/{{ .Os }}-{{ if eq .Arch "amd64" }}x64{{ else }}{{ .Arch }}{{ end }}/bin'
+        - sh -c 'cp "{{ .Path }}" "npm/platforms/{{ .Os }}-{{ if eq .Arch "amd64" }}x64{{ else }}{{ .Arch }}{{ end }}/bin/{{ if eq .Os "windows" }}huddle.exe{{ else }}huddle{{ end }}"'
+
+archives:
+  - formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+
+checksum:
+  name_template: checksums.txt
+
+homebrew_casks:
+  - name: huddle
+    binaries:
+      - huddle
+    repository:
+      owner: muthuishere
+      name: homebrew-tap
+    homepage: https://github.com/muthuishere-agent-skills/huddle
+    description: The AI-native SDLC orchestrator — expert huddles, artifacts, gates and hooks for coding agents.
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/huddle"]
+          end
+
+release:
+  github:
+    owner: muthuishere-agent-skills
+    name: huddle

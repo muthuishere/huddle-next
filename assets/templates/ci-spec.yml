@@ -1,0 +1,38 @@
+# Drafted by `huddle ci draft spec`. Review before committing.
+# When an intent merges, Claude drafts the spec and opens a pull request.
+# A human owner still reviews and approves the spec (huddle gate request spec-<slug> --role tech-lead).
+name: intent-to-spec-draft
+on:
+  push:
+    branches: [{{branch}}]
+    paths:
+      - "intent/**/intent.md"
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  draft-spec:
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Draft specs for merged intents
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          for intent in $(git diff --name-only HEAD~1 HEAD -- 'intent/**/intent.md'); do
+            dir=$(dirname "$intent"); slug=$(basename "$dir")
+            [ -f "$dir/spec.md" ] && continue
+            branch="spec/$slug"
+            git switch -c "$branch"
+            claude -p "Read $intent and CLAUDE.md. Write $dir/spec.md with sections Requirements (each with an Acceptance line), Design, Policy concerns, Non-goals, Links. Set front matter status: draft." \
+              --allowedTools "Read,Grep,Glob,Write"
+            git add "$dir/spec.md"
+            git -c user.name="huddle-bot" -c user.email="huddle-bot@users.noreply.github.com" commit -m "spec: draft for $slug"
+            git push origin "$branch"
+            gh pr create --title "spec: $slug" --body "Drafted from $intent by claude -p. Needs owner review." --head "$branch"
+            git switch -
+          done

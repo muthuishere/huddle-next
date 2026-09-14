@@ -1,0 +1,53 @@
+{
+  "name": "@muthuishere/huddle",
+  "version": "0.1.0",
+  "description": "The AI-native SDLC orchestrator: expert huddles, playbook artifacts, human gates and lifecycle hooks for coding agents.",
+  "keywords": [
+    "huddle",
+    "agent",
+    "skills",
+    "claude",
+    "codex",
+    "sdlc",
+    "personas",
+    "cli"
+  ],
+  "homepage": "https://github.com/muthuishere-agent-skills/huddle",
+  "bugs": {
+    "url": "https://github.com/muthuishere-agent-skills/huddle/issues"
+  },
+  "author": "Muthukumaran Navaneethakrishnan",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/muthuishere-agent-skills/huddle.git"
+  },
+  "bin": {
+    "huddle": "bin/huddle.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "bin/",
+    "README.md"
+  ],
+  "optionalDependencies": {
+    "@muthuishere/huddle-darwin-arm64": "0.1.0",
+    "@muthuishere/huddle-darwin-x64": "0.1.0",
+    "@muthuishere/huddle-linux-arm64": "0.1.0",
+    "@muthuishere/huddle-linux-x64": "0.1.0",
+    "@muthuishere/huddle-windows-x64": "0.1.0"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "cpu": [
+    "arm64",
+    "x64"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}

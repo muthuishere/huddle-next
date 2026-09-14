@@ -1,0 +1,66 @@
+version: '3'
+
+vars:
+  VERSION:
+    sh: git describe --tags --always --dirty 2>/dev/null || echo dev
+  COMMIT:
+    sh: git rev-parse --short HEAD 2>/dev/null || echo unknown
+  LDFLAGS: -s -w -X github.com/muthuishere/huddle/internal/version.Version={{.VERSION}} -X github.com/muthuishere/huddle/internal/version.Commit={{.COMMIT}}
+
+tasks:
+  build:
+    desc: Build the huddle binary for the current platform
+    cmds:
+      - CGO_ENABLED=0 go build -trimpath -ldflags "{{.LDFLAGS}}" -o bin/huddle ./cmd/huddle
+
+  test:
+    desc: Run Go tests
+    cmds:
+      - go test ./...
+
+  lint:
+    desc: gofmt check + go vet
+    cmds:
+      - test -z "$(gofmt -l cmd internal assets skills)" || (gofmt -l cmd internal assets skills && exit 1)
+      - go vet ./...
+
+  budget:
+    desc: Skill byte budgets (SKILL.md ≤ 6KB, description ≤ 260B, lazy files ≤ 8KB)
+    cmds:
+      - go test -run TestSkillByteBudgets ./internal/install/
+
+  ci:
+    desc: Run local CI checks
+    cmds:
+      - task: lint
+      - go test -short ./...
+      - task: budget
+      - task: build
+      - ./bin/huddle --version
+      - ./bin/huddle --help
+
+  bench:
+    desc: Run benchmarks (huddle start budget, redaction, …)
+    cmds:
+      - go test -run '^$' -bench . -benchmem ./...
+
+  install:local:
+    desc: Build and install the skills from this checkout
+    deps: [build]
+    cmds:
+      - ./bin/huddle install --skills
+
+  snapshot:
+    desc: Build a local multi-platform snapshot
+    cmds:
+      - goreleaser release --snapshot --clean --skip=publish
+
+  release:version:
+    desc: "Bump every npm package to one version (usage: task release:version VERSION=0.2.0)"
+    cmds:
+      - scripts/npm-set-version.sh {{.VERSION}}
+
+  release:dry-run:
+    desc: Dry-run GoReleaser
+    cmds:
+      - goreleaser release --snapshot --clean --skip=publish --verbose

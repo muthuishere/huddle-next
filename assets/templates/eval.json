@@ -1,0 +1,6 @@
+{
+  "prompt": "{{title}}",
+  "checks": [
+    "Describe one observable check that defines an acceptable answer"
+  ]
+}
