@@ -24,6 +24,7 @@ These ADRs define the Go CLI + skills that make that possible (ADR 16 is the pro
 | [16](16-ai-native-sdlc-orchestrator.md) | **Product spine:** Huddle orchestrates the entire AI-native SDLC (setup → maintain) | proposed |
 | [17](17-lifecycle-hooks.md) | Lifecycle hooks at every stage — `hooks[]` in global/repo `config.json`, no trust hashing; links as source-of-truth | proposed |
 | [19](19-v1-scope-and-value-gate.md) | **v1 scope + value gate** — what is built, what stays deferred; resolves contradictions | proposed |
+| [20](20-huddle-serve-dashboard-and-local-analytics.md) | `huddle serve` dashboard on :16211 + local-only CLI/skill usage analytics | proposed |
 | [18](18-cli-first-artifact-catalog.md) | CLI-first and human-visible; every artifact a CLI noun — intent, spec, plan, ADR, spike, guardrails, review policy, evals, bands, skills, hooks | proposed |
 
 ## Inputs
