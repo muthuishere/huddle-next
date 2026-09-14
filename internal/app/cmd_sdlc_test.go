@@ -122,6 +122,9 @@ func TestVerifyEvalBlockedNeverPass(t *testing.T) {
 }
 
 func TestSdlcStatus50IntentsUnder30ms(t *testing.T) {
+	if testing.Short() {
+		t.Skip("timing budget is measured on a dev machine, not shared CI runners")
+	}
 	root := artTestEnv(t)
 	for i := 0; i < 50; i++ {
 		slug := fmt.Sprintf("change-%02d", i)
