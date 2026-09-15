@@ -2,9 +2,10 @@
   "name": "@muthuishere/huddle-darwin-x64",
   "version": "0.1.0",
   "description": "huddle prebuilt binary for darwin-x64",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/muthuishere-agent-skills/huddle.git"
+    "url": "git+https://github.com/muthuishere/huddle.git"
   },
   "publishConfig": {
     "access": "public"

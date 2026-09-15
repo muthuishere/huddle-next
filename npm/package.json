@@ -12,14 +12,15 @@
     "personas",
     "cli"
   ],
-  "homepage": "https://github.com/muthuishere-agent-skills/huddle",
+  "homepage": "https://github.com/muthuishere/huddle",
   "bugs": {
-    "url": "https://github.com/muthuishere-agent-skills/huddle/issues"
+    "url": "https://github.com/muthuishere/huddle/issues"
   },
   "author": "Muthukumaran Navaneethakrishnan",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/muthuishere-agent-skills/huddle.git"
+    "url": "git+https://github.com/muthuishere/huddle.git"
   },
   "bin": {
     "huddle": "bin/huddle.js"
@@ -29,7 +30,9 @@
   },
   "files": [
     "bin/",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "THIRD-PARTY-LICENSES.md"
   ],
   "optionalDependencies": {
     "@muthuishere/huddle-darwin-arm64": "0.1.0",

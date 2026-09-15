@@ -43,7 +43,7 @@ homebrew_casks:
     repository:
       owner: muthuishere
       name: homebrew-tap
-    homepage: https://github.com/muthuishere-agent-skills/huddle
+    homepage: https://github.com/muthuishere/huddle
     description: The AI-native SDLC orchestrator — expert huddles, artifacts, gates and hooks for coding agents.
     hooks:
       post:
@@ -54,5 +54,5 @@ homebrew_casks:
 
 release:
   github:
-    owner: muthuishere-agent-skills
+    owner: muthuishere
     name: huddle

@@ -10,6 +10,15 @@ if [[ "${GITHUB_ACTIONS:-}" != "true" || -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}
   exit 1
 fi
 
+# MIT requires the notice to travel with every distributed copy. The canonical
+# LICENSE lives at the repo root; copy it in at publish time so the six package
+# directories cannot drift from it.
+stage_license() {
+  local dir="$1"
+  cp "${ROOT_DIR}/LICENSE" "${dir}/LICENSE"
+  cp "${ROOT_DIR}/THIRD-PARTY-LICENSES.md" "${dir}/THIRD-PARTY-LICENSES.md"
+}
+
 publish_package() {
   local dir="$1"
   local name version
@@ -23,6 +32,7 @@ publish_package() {
   fi
 
   echo "publish ${name}@${version}"
+  stage_license "$dir"
   (cd "$dir" && npm publish --access public --provenance)
 }
 

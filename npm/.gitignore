@@ -1,2 +1,4 @@
 platforms/*/bin/
 node_modules/
+LICENSE
+THIRD-PARTY-LICENSES.md
