@@ -10,7 +10,7 @@ Subagents do the work; the room critiques; a human owner approves every gate.
 
 ## 1. Start (always, exactly one call)
 
-Run `huddle start` once. Read the `KEY: value` lines.
+Run `huddle start --skill huddle-sdlc` once. Read the `KEY: value` lines.
 
 - `HUDDLE_PROTO: 1` → continue.
 - Missing / other value / `huddle` not found → **degraded flow**: say

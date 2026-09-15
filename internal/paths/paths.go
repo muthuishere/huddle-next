@@ -76,3 +76,6 @@ func SafeName(s string) string {
 	}
 	return s
 }
+
+// Usage is the local-only CLI usage log (ADR 20); it rotates to Usage()+".1".
+func Usage() string { return filepath.Join(Global(), "usage.jsonl") }

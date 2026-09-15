@@ -101,12 +101,12 @@ type StartResult struct {
 }
 
 func runStart(c *Ctx, args []string) error {
-	a, err := parseCoreArgs("start", args, nil, []string{"json"})
+	a, err := parseCoreArgs("start", args, []string{"skill"}, []string{"json"})
 	if err != nil {
 		return err
 	}
 	if a.bools["help"] {
-		return coreHelp(c, "Usage: huddle start [--json]\n\nOne call, no network: protocol, repo, config summary, active decisions,\nopen questions/actions, learnings, pending gates, persona and draft counts.\n")
+		return coreHelp(c, "Usage: huddle start [--skill <name>] [--json]\n\nOne call, no network: protocol, repo, config summary, active decisions,\nopen questions/actions, learnings, pending gates, persona and draft counts.\n--skill names the calling skill for local usage stats only (huddle stats).\n")
 	}
 	res, err := buildStart(c)
 	if err != nil {

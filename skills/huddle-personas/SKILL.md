@@ -9,7 +9,7 @@ Personas are room members with a voice. You draft; the user reviews; the CLI wri
 
 ## 1. Start (always, exactly one call)
 
-Run `huddle start` once. Read the `KEY: value` lines.
+Run `huddle start --skill huddle-personas` once. Read the `KEY: value` lines.
 
 - `HUDDLE_PROTO: 1` → continue.
 - Missing / other value / `huddle` not found → **degraded flow**: say

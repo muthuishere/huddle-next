@@ -9,7 +9,7 @@ Personas give perspective, then STOP. The user decides. You never decide for the
 
 ## 1. Start (always, exactly one call)
 
-Run `huddle start` once, before anything else. Read its `KEY: value` lines.
+Run `huddle start --skill huddle` once, before anything else. Read its `KEY: value` lines.
 
 - `HUDDLE_PROTO: 1` → continue with this file.
 - Missing, different number, or `huddle` not found → **degraded flow**: tell the user

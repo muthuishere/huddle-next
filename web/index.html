@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Huddle</title>
+<link rel="stylesheet" href="/app.css">
+<meta name="huddle-token" content="{{TOKEN}}">
+</head>
+<body>
+<header class="bar">
+  <span class="brand">huddle</span>
+  <span id="repo" class="repo"></span>
+  <select id="repoPick" class="pick" aria-label="Repo"></select>
+  <span class="grow"></span>
+  <span id="err" class="err" role="alert" hidden></span>
+</header>
+
+<nav class="tabs" id="tabs" role="tablist"></nav>
+
+<main id="view" class="view" aria-live="polite">
+  <p class="muted">Loading…</p>
+</main>
+
+<script src="/app.js"></script>
+</body>
+</html>
