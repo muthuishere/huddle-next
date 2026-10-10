@@ -52,3 +52,32 @@ Huddle is getting big (SDLC orchestration, personas, writers, artifact writers, 
 - Asset authors work against visible budgets; bloat shows up as a failing test with a number.
 - Two representations of each persona (full body + style card) — the card is derived at build/resolve time, not hand-written.
 - The e2e harness needs an authenticated runner to measure tool calls (ADR 9 open question).
+
+## Open questions
+
+### Implementation status, 2026-10-10 (event `20261010T045742.452Z-01d288`)
+
+Status stays `proposed`: the decision is **partially implemented**. Verified against the
+tree, not against this ADR's own claims.
+
+**Landed:** §A1-A5 (no daemon; one `huddle start`; concurrent probes with per-probe deadlines and
+`partial: true` — `internal/app/cmd_start.go:96`, `:128`, `:159`); §A8 the p50 budget as a test
+(`internal/app/core_test.go:359`); §B9-B11 (`HUDDLE_PROTO` at `internal/app/cmd_start.go:77`, `:520`;
+next-action error strings at `internal/gates/gates.go:226`, `:334`); §C13 style cards with per-field
+budgets (`internal/personas/style.go:43`, `internal/personas/personas_test.go:207`); §C15 the byte
+budgets as a CI gate (`internal/install/budget_test.go:12-18`, `.github/workflows/ci.yml:26`);
+§C17 top-N learnings, latest-per-key (`internal/app/cmd_start.go:333-359`).
+
+**Not landed:**
+
+- §A6 the `cache/index.gob` mtime-keyed index cache does not exist. Deliberate, and recorded:
+  `stress-test.md:46` calls it over-engineering and says measure first. Either amend §A6 or drop it.
+- §C12 the embedded `manifest.json` (title, trigger, bytes) is not there, and there are no
+  `writers/<writer>.md` or `personas/<id>.md` lazy files — `skills/` holds `SKILL.md` plus
+  `modes/` and `stages/` only. Lazy loading works by router text, not by a manifest.
+- §C14 served catalogs (`huddle methods pick`) — not implemented; follows ADR 14 §8, which ADR 19
+  defers, so §C14 should be marked deferred too.
+- §C18 generated-and-committed index files with `go generate` + a freshness CI check — there is no
+  `go:generate` directive in the repo. The drift check that does exist
+  (`internal/app/skills_sync_test.go`) validates subcommands, not generated indexes.
+- §A4's 24 h update check is not implemented.

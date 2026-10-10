@@ -69,3 +69,33 @@
 
 - Spike location: `spikes/<n>-<slug>/` at repo root vs `docs/spikes/`?
 - Resolved (ADR 19): `huddle watch` deferred.
+
+### Implementation status, 2026-10-10 (event `20261010T045742.452Z-01d288`)
+
+Status stays `proposed`: the decision is **partially implemented**. Verified against the
+tree, not against this ADR's own claims.
+
+**Landed:** §A1-A3 (every noun reachable without an agent — `huddle log`, `huddle timeline`,
+`huddle sdlc status`, `huddle <noun> show`); §A2's `--json` everywhere; §A4 gates from the CLI with
+separation of duties and agent-session rejection (`internal/gates/gates.go:145` the agent env list,
+`:264-300` approver-is-an-owner-and-not-the-writer); §A5 `--dry-run` on every writer
+(`internal/app/cmd_artifacts.go:56`, `:171`); §A6 bare `huddle` prints `sdlc status`
+(`internal/app/app.go:90-92`); §B8 the full noun catalog with `new|list|show|status|lint`
+(`internal/artifacts/kinds.go:39-68`, `internal/app/cmd_artifacts.go:23`); §B9 writers per noun
+(`skills/huddle-sdlc/stages/*.md`); §C11-C14 spikes as a first-class noun with the full template
+(`internal/artifacts/kinds.go:51-53`, `assets/templates/spike.md`).
+
+**Not landed:**
+
+- §B10 `huddle <noun> show --graph` — no `--graph` flag anywhere in `internal/`. Front-matter `links`
+  are parsed but the chain is never printed as a tree.
+- §A7 `huddle watch` — deferred by ADR 19 (expected).
+
+**Contradiction between §B8's lint and this folder's own format.** `huddle adr lint` requires YAML
+front matter (`id`, `kind`, `status`, `author`) and `## Status`, `## binds`, `## prevents` headings
+(`internal/artifacts/kinds.go:48-50`, `internal/artifacts/lint.go:131-164`), while
+`docs/adr/README.md` prescribes a `- Status:` bullet and Decision → Context → Details → Consequences
+→ Open questions. All 20 ADRs in this folder therefore fail `huddle adr lint` — 80 findings, every
+one of them about the format the folder's own README mandates. Separately, the lint's status
+vocabulary is `draft|proposed|approved|superseded` (`internal/artifacts/store.go:42`) while the
+README and ADR 7 §3 / ADR 14 §7 all say `accepted`. Pick one vocabulary and one ADR shape.

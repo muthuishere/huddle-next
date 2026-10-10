@@ -1,0 +1,57 @@
+# bands.yaml — deterministic control bands (huddle bands check)
+#
+# One metric per file: huddle's bands.yaml is a singleton artifact and
+# internal/bands.ParseConfig reads a single top-level `metric:` key, so this file
+# tracks the metric that gates the release (ADR 19's performance line). The other
+# two candidates are already enforced as hard ceilings by Go tests rather than
+# bands, and are listed under `other_metrics:` below for the record.
+#
+# METRIC: p50 duration, in milliseconds, of `huddle start` — the one startup call
+# every agent session makes (ADR 2, 13, 19) — as huddle records it itself: the
+# in-process dispatch time from internal/app.Run, which is what internal/usage.Budgets
+# compares against 60 ms. Process exec is outside it; the wall-clock figure is noted
+# under baseline for context.
+# SERIES: one point per day, the `p50ms` of cmd "start" from
+#   `huddle stats --json --since 1d` (internal/usage/usage.go aggregates it from
+#   ~/.config/.huddle/usage.jsonl; nothing leaves the machine).
+#   Feed it with: huddle bands check --series start-p50.csv
+metric: huddle-start-p50-ms
+
+baseline:
+  # Measured 2026-10-10 on this repo, darwin/arm64, warm: n=25 runs of
+  # `huddle start --json` recorded by huddle's own usage log →
+  # p50 0.21 ms, p95 0.28 ms, mean 0.24 ms, sample sd 0.13 ms (in-process dispatch).
+  # Process wall-clock over the same loop (n=30, exec included): p50 4.8 ms, p95 5.8 ms.
+  # BenchmarkStart (internal/app, go test -bench): 1.74 ms/op.
+  # The budget in internal/usage.Budgets and ADR 19 is p50 ≤ 60 ms, so today's
+  # measurement sits ~12x under the budget with exec included. A ceiling that far
+  # away never fires; the band watches drift from the measured baseline instead,
+  # which is what catches a regression on the day it lands.
+  # Baseline is recomputed from the series rather than pinned, so a machine change
+  # (CI runner, laptop) re-levels it instead of producing a false breach.
+  window: 20        # first 20 daily points form the baseline
+rules:
+  direction: up     # only slower-than-baseline matters; a faster start is good news
+  min_points: 10    # fewer than 10 days of data ⇒ no verdict, never a guessed one
+tiers:
+  log: 1            # ≥ 1σ slower: log it, no action
+  diagnose: 2       # ≥ 2σ slower: diagnose (profile `huddle start`, check the index cache)
+  breach: 3         # ≥ 3σ slower: draft an intent — or if p50 > 60 ms, the ADR 19 gate is broken
+
+# Not tracked as bands — already hard ceilings enforced deterministically in CI,
+# where a failing test is a better signal than a sigma band:
+other_metrics:
+  skill-skill-md-bytes:
+    ceiling: 6144                # AGENTS.md / ADR 19: every SKILL.md ≤ 6 KB
+    measured_2026_10_10:         # find skills -name SKILL.md | xargs wc -c
+      huddle: 3917
+      huddle-sdlc: 3631
+      huddle-personas: 2515
+    enforced_by: "task budget (TestSkillByteBudgets, internal/install)"
+  start-output-bytes:
+    ceiling: 2048                # ADR 19: `huddle start` output ≤ 2 KB
+    measured_2026_10_10: {human: 443, json: 742}
+    enforced_by: "internal/app tests + `huddle start | wc -c`"
+  test-pass-rate:
+    target: 1.0                  # go test ./... is all-or-nothing here, not a rate
+    enforced_by: "task ci (lint, go test -short ./..., budget, build, --version, --help)"

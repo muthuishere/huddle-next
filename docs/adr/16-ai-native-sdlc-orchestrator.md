@@ -1,6 +1,6 @@
 # ADR 16: Huddle Is the AI-Native SDLC Orchestrator
 
-- Status: proposed
+- Status: accepted — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw decision: README Inputs)
 - Date: 2026-09-14
 - v1: built; deferred: §3 dispatch automation (v1: plan + task brief), §10 `huddle team` (ADR 19)
 - Product spine — every other ADR serves this one.
@@ -62,3 +62,18 @@
 ## Open questions
 
 - Resolved (ADR 19): v1 ships plan + task brief; dispatch automation deferred.
+
+### Accepted with two surface divergences, 2026-10-10 (event `20261010T045742.452Z-01d288`)
+
+The decision is implemented — `huddle sdlc status|next` (`internal/app/cmd_sdlc.go:13-18`), one lazy
+`stages/<stage>.md` per stage (`skills/huddle-sdlc/stages/*.md`), all six beats of §4 in each stage
+file (`skills/huddle-sdlc/stages/plan.md:6`, `:11`, `:21`, `:29`, `:46`), owners-and-gates per
+artifact (`internal/artifacts/kinds.go:39-68` `GateRole`, `internal/gates/gates.go:264-300`), §9's
+hard limits (nothing in `internal/` pushes, merges or deploys). Two clauses landed on a different
+surface than written:
+
+- §4 beat 2 says the ≤ 7 stage questions are "served by the CLI"; they ship as skill text instead
+  (`skills/huddle-sdlc/stages/plan.md:11-19`). Same questions, no CLI command.
+- §8 `huddle sdlc status --metrics` does not exist; the metrics it names are computed and surfaced by
+  `huddle stats` and the dashboard (`internal/usage/flow.go:32`, `internal/serve/analytics.go:16`)
+  per ADR 20 §4. Amend §8 to point at `stats`, or add the flag.

@@ -45,3 +45,27 @@ AI Engineer Coach versions its cache (`CACHE_VERSION`) with 0700/0600 permission
 
 - A Go struct can't silently drop historical fields; old huddles resume unchanged.
 - The canonical `huddle-state.json` v1 schema is written once, as a JSON Schema in `assets/schema/`, and `step-02` + Elango's persona doc are corrected to point at it.
+
+## Open questions
+
+### Implementation status, 2026-10-10 (event `20261010T045742.452Z-01d288`)
+
+Status stays `proposed`: the decision is **partially implemented**. Verified against the
+tree, not against this ADR's own claims.
+
+**Landed:** §1 the `~/.config/.huddle` root and its layout (`internal/paths/paths.go`), the
+copy-never-overwrite migration (`internal/app/cmd_migrate.go:418` uses `O_EXCL`); §3 permissive
+readers (`internal/config/config_test.go`); §5 one appender, `O_APPEND`, one JSON line per event
+(`internal/eventlog/eventlog.go`); §8 one identity resolver (`internal/repo/repo.go:22` `Identify`,
+used by every command).
+
+**Not landed:**
+
+- §2 "every JSON file Huddle writes carries `schemaVersion`" — only two writers do
+  (`internal/app/cmd_migrate.go:42`, `internal/app/cmd_start.go:256`).
+- §4 writes are temp-file + rename but are **not** fsynced before the rename
+  (`internal/config/config.go:207-216`).
+- §6 the advisory `.lock` file (`O_EXCL`, stale after 30 s) does not exist — no `.lock` in `internal/`.
+- §7 `branch.json` recording the original branch name is not written — no `branch.json` in `internal/`.
+- `huddle-state.json` from the §1 layout is never written at all. Harmless by ADR 19 row 4 (it is a
+  derived cache, never truth), but §6's lock is then moot and the §1 layout is aspirational.

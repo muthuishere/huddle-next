@@ -1,6 +1,6 @@
 # ADR 10: Personas from Any Data — One Ingest Route, Import, Proposals, and a Style API
 
-- Status: proposed
+- Status: accepted — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw decision: README Inputs)
 - Date: 2026-09-14
 - v1: built; deferred: §5 discover/propose, §6 analyze (ADR 19)
 

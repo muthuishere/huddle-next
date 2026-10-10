@@ -1,6 +1,6 @@
 # ADR 20: `huddle serve` — Local Dashboard on :16211 and Local-Only Usage Analytics
 
-- Status: proposed
+- Status: accepted — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw decision: README Inputs)
 - Date: 2026-09-14
 - v1: built
 - Amends: ADR 18 §7 ("no web dashboard in core"), ADR 11 §2 (usage lines)

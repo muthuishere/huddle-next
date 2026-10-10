@@ -57,3 +57,20 @@
 
 - Should `new` also select the persona into the current huddle immediately?
 - Rename collisions with historical persona ids (`huddle-global-roster-rename.md`): reject or warn?
+
+### Implementation status, 2026-10-10 (event `20261010T045742.452Z-01d288`)
+
+Status stays `proposed`: the decision is **partially implemented**. Verified against the
+tree, not against this ADR's own claims.
+
+**Landed:** §1 CLI half (`internal/app/cmd_persona.go:30-38` — `persona new --scope global|repo
+--from|--template`), §2 review-before-write (`--dry-run`, no implicit `--yes`), §3 the one persona
+format and its lint (`internal/personas/lint.go`, `internal/personas/personas_test.go:180`
+`TestBuiltinsPassLint`), §4 validate-then-scaffold (`internal/personas/personas_test.go:327`
+`TestLintDefinitionErrorsAndTemplate`).
+
+**Not landed:**
+
+- §5 `huddle persona remember <id>` — no such verb; `memories/*.md` can only be written by hand
+  (`internal/app/cmd_persona.go:30-38` lists every verb; no `remember` anywhere in `internal/`).
+- §6 `huddle persona new <id> --scope repo --fork` — no `fork` flag or code path in `internal/`.
