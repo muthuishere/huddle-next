@@ -1,6 +1,6 @@
 # ADR 19: v1 Scope — Build Only What Scores; Everything Else Stays in the ADRs
 
-- Status: proposed
+- Status: accepted — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw decision: README Inputs)
 - Date: 2026-09-14
 - Overrides: scope of ADRs 1–18 for the first release. Deferred items remain valid design, not v1 work.
 
@@ -49,3 +49,28 @@ Room modes beyond `session` · anti-consensus roles · pressure-test mode · sav
 - Deepak's doc flow is replaced by the guardrails writer.
 - The default room is `session`.
 - Spikes, `.huddle/` config, and `AGENTS.md` are marked Huddle conventions beyond the playbook.
+
+## Open questions
+
+### Accepted, 2026-10-10 (event `20261010T045742.452Z-01d288`)
+
+The scope decision was adopted and its value gate holds: `stress-test.md:51` scores C+P 54/64 = 84 %
+against the ≥ 80 % gate with 0 open high-severity edges, and the performance clause is enforced by
+tests (`internal/app/core_test.go:359` p50 < 60 ms; `internal/install/budget_test.go:12-18` for
+SKILL.md ≤ 6 KB, description ≤ 260 B, lazy files ≤ 8 KB; `internal/app/cmd_start.go:35`
+`startBudgetBytes = 2048`). Rows 1-14 and 16-19 all ship commands; `huddle --help` is the inventory.
+
+Three rows need an amendment rather than more code:
+
+- **Row 2's index cache was deliberately not built.** `stress-test.md:46` calls it over-engineering
+  and says measure first; the p50 test passes without it. Drop it from row 2 or move it to deferred.
+- **Row 15 (crossmem library) ships as a shell-out in released binaries.** The library path is behind
+  `-tags crossmem` (`internal/app/context_crossmem.go:1`) and `.goreleaser.yaml` passes no tags, so
+  the default is `internal/app/context_cli.go` exec'ing the CLI. See ADR 8's note.
+- **"§9 learnings" is listed as deferred but is built** — typed learnings with latest-per-key and
+  injection at `huddle start` (`internal/app/cmd_log.go:35`, `internal/app/cmd_start.go:333-359`),
+  plus `huddle timeline`. See ADR 14's note.
+
+Also unaccounted for by this ADR either way: ADR 14 §11 install hygiene (`.huddle-owned` is built,
+`removals` and `huddle digest` are not) and ADR 13 §C14 served catalogs (not built; belongs with the
+deferred ADR 14 §8).

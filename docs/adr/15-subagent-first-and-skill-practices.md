@@ -1,6 +1,6 @@
 # ADR 15: Subagent-First Execution and Agent-Skill Best Practices
 
-- Status: proposed
+- Status: accepted — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw decision: README Inputs)
 - Date: 2026-09-14
 - v1: built: §A, §C, §D; deferred: §B agent definitions, per-persona subagent views (ADR 19)
 - Builds on: ADR 13 (budgets), ADR 14 §2 (room modes)

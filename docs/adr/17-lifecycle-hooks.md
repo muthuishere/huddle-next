@@ -67,3 +67,39 @@
 - Any team's toolchain plugs in without a Huddle release; integrations live in the repo, reviewed like code.
 - Gates can depend on external state (PR approvals, ticket status) without Huddle knowing those systems.
 - Hook failures and latency are contained by timeouts, async, and ask-on-failure.
+
+## Open questions
+
+### Implementation status, 2026-10-10 (event `20261010T045742.452Z-01d288`)
+
+Status stays `proposed`: the decision is **partially implemented**. Verified against the
+tree, not against this ADR's own claims.
+
+**Landed:** §1; §3 `hooks[]` at two config levels, global then repo
+(`internal/hooks/hooks.go:65` `Fire`); §4 the stdin/stdout contract including `ingest`, `links` and
+`log` (`internal/hooks/hooks.go:40-64`); §5 non-blocking by default, timeouts, escalation
+(`internal/hooks/hooks.go:328`), detached `async` (`:347`) and the deny-keeps-the-gate-closed rule
+with a logged `--override --reason` (`internal/gates/gates.go:300`, `:333-338`); §6 no trust hashing,
+with a change notice instead (`internal/app/cmd_start.go:256`); §8 `hooks export --host claude`
+(`internal/hooks/export.go`); §9 the CLI, plus a `fire` verb (`internal/app/cmd_hooks.go:17`).
+
+**Not landed — §2's premise is the gap.** §2 says every listed event is "emitted by `huddle` CLI
+commands, so they fire deterministically — never 'if the model remembers'". Only five actually fire:
+`gate.request|approved|rejected|override` (`internal/gates/gates.go:324`, `:378`) and
+`artifact.written` (`internal/artifacts/record.go:47`). `session.start|wrap`, `stage.enter|complete`,
+`artifact.draft`, `decision.logged`, `decision.superseded`, `action.created`, `learning.logged`,
+`build.task.*`, `verdict.issued`, `verdict.stale`, `spike.*`, `persona.*` and `team.*` are never
+fired by any command — `persona.written` / `persona.ingested` go to the event log only
+(`internal/app/cmd_persona.go:403`, `:465`). They can only be triggered by hand with
+`huddle hooks fire <event>`.
+
+Two consequences:
+
+- §5's blocking allow-list names `stage.complete`, `build.task.dispatched` and `artifact.draft`, none
+  of which exist as emitted events, so blocking is in practice only available on `gate.*`.
+- `stress-test.md:35` records the "deny after `artifact.written`" edge as **Closed** because blocking
+  is restricted to `artifact.draft`. Since `artifact.draft` never fires, there is no pre-write deny
+  path at all; that edge should go back to Open until it does.
+
+`stress-test.md:45` already proposes the fix: ship `stage.*`, `artifact.*`, `gate.*` and
+`verdict.issued` first.

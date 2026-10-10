@@ -31,3 +31,26 @@ Plus:
 ## Open questions
 
 - Eval harness: Claude Agent SDK / `claude -p` with an API key in CI. **No authenticated runner ⇒ the eval result is `unverified`, never PASS; the gate asks the owner (ADR 19 row 12).**
+
+### Implementation status, 2026-10-10 (event `20261010T045742.452Z-01d288`)
+
+Status stays `proposed`: the decision is **partially implemented**. Verified against the
+tree, not against this ADR's own claims.
+
+**Landed:** §2 asset lint — every embedded persona is validated against the ADR 4 schema
+(`internal/personas/personas_test.go:180`) and every `huddle …` invocation in embedded skill text is
+checked against the live command registry, so no stale subcommand survives
+(`internal/app/skills_sync_test.go:28`). §4 `BenchmarkStart` plus a p50 assertion
+(`internal/app/core_test.go:332`, `:359`). §5 the release gate (`Taskfile.yml:32` `task ci`,
+`.github/workflows/ci.yml:24-32`).
+
+**Not landed:**
+
+- §1 parity fixtures — there is no `testdata/parity/` anywhere in the repo, and the Python scripts
+  were deleted without the byte-compatibility matrix ever being captured. The clause is now
+  unexecutable; retire it or recreate the matrix from the released binary instead.
+- §3 behaviour evals — there is no `evals/` suite in this repo and no `agent-evals` workflow; only
+  the *template* for one ships (`assets/templates/ci-eval.yml`, `huddle eval ci-draft`).
+- §2's "doc contradictions become failing lint cases" is not implemented: the lint parses `huddle`
+  subcommands only, so the dead `references/` paths left by ADR 11 pass unnoticed.
+- CI does not fail on a >25% benchmark regression; `.github/workflows/ci.yml` never runs `task bench`.

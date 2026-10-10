@@ -100,3 +100,34 @@ Menu codes per agent · theatrical keepsake HTML / fourth-wall fiction · web bu
 ## Open questions
 
 - Resolved (ADR 19): default room is `session`; anti-consensus roles deferred.
+
+### Implementation status, 2026-10-10 (event `20261010T045742.452Z-01d288`)
+
+Status stays `proposed`: the decision is **partially implemented**. Verified against the
+tree, not against this ADR's own claims.
+
+**Landed:** §1 in full (`internal/eventlog/eventlog.go:28` `door`, `:34` the artifact path+hash
+ref, `internal/app/cmd_log.go:35` the type list incl. `supersede`/`redact`, computed active decisions
+at `internal/app/cmd_start.go:306-359`); §6's verdicts and fingerprints
+(`internal/gates/verify.go:28-29`, `:53-96` git `ls-files -s` with a content-hash fallback, `:50`
+`stale`); §7's ADR `binds:`/`prevents:` (`internal/artifacts/kinds.go:50`,
+`assets/templates/adr.md:26,30`), the spec-law lint (`internal/artifacts/lint.go:88`, `:166-183`;
+non-goals required at `internal/artifacts/kinds.go:44`) and the guardrails managed block
+(`internal/artifacts/lint.go:84-85`); §10's single entry and next-step (`huddle start`,
+`huddle sdlc next` — `internal/app/cmd_sdlc.go:16`), the question shape and tie-breaks in the
+stage/mode files.
+
+**Not landed:**
+
+- §6's review lenses are **not served by the CLI** — `adversarial | edge-case | verification-gap |
+  structure` exist only as skill prose (`skills/huddle/modes/verification.md:14`,
+  `skills/huddle-sdlc/stages/test.md:26`), and findings have no canonical JSON shape in `internal/`.
+- §7's guardrails refresh **ledger** (`retain | rewrite | relocate | automate | delete` per existing
+  line, never silently deleting a human line) is not implemented; only the block markers are.
+- §11 (install hygiene) is half-built and unaccounted for by ADR 19, which lists it as neither built
+  nor deferred: `.huddle-owned` is there (`internal/install/install.go:26`, `:132`), but the embedded
+  `removals` list and `huddle digest` are not.
+
+**Contradiction to resolve:** ADR 19 defers "§9 learnings", but typed learnings with
+latest-per-key and injection at start are built (`internal/app/cmd_log.go:35`,
+`internal/app/cmd_start.go:333-359`) and so is `huddle timeline`. ADR 19's deferral line is stale.

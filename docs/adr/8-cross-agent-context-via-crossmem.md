@@ -34,3 +34,29 @@
 - Huddle's binary grows by the SQLite driver (~several MB); acceptable for a CLI.
 - Version coupling: Huddle pins a crossmem module version; provider fixes arrive via `go get -u` + a Huddle release.
 - Owner action: `npm i -g @muthuishere/crossmem@latest` so the standalone crossmem-loader skill also sees OpenCode.
+
+## Open questions
+
+### Implementation status, 2026-10-10 (event `20261010T045742.452Z-01d288`)
+
+Status stays `proposed`: the decision is **partially implemented**. Verified against the
+tree, not against this ADR's own claims.
+
+**Landed:** §4 lazy — `huddle start` reports only a summary and `huddle context --agents` is
+on demand (`internal/app/cmd_context.go:13`); §6 the single redaction choke point
+(`internal/redact/redact.go:21`, `internal/redact/redact_test.go`); §7 transcripts are never written
+into state or memories.
+
+**Not landed — and §3 is contradicted by the code:**
+
+- §2 the library import exists but is behind a build tag: `internal/app/context_crossmem.go:1` is
+  `//go:build crossmem`, and it is only reachable with `go build -tags crossmem` plus a gitignored
+  `go.work` (see the repo `CLAUDE.md`).
+- §3 "No shell-out fallback needed" — the **default** build is the shell-out:
+  `internal/app/context_cli.go:1-2` is `//go:build !crossmem` and execs the `crossmem` CLI. So every
+  released binary (`.goreleaser.yaml` passes no tags) takes the path this ADR says is unnecessary,
+  and cross-agent context silently degrades to "hint only" when the CLI is absent.
+- §5 `guardrails` and `load` of a chosen session are not exposed by `huddle context`.
+
+Decide one way or the other: either make `crossmem` a plain dependency and build it into the
+release, or amend §2/§3 to say the CLI is the shipped path and the library is opt-in.

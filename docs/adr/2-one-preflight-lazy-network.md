@@ -1,6 +1,6 @@
 # ADR 2: One `huddle preflight` Call; Network Context Is Lazy and Cached
 
-- Status: proposed
+- Status: accepted — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw decision: README Inputs)
 - Date: 2026-09-14
 - v1: built as `huddle start`; deferred: §3–4 gh cache (use hooks) (ADR 19)
 - Amended by: ADR 14 §10 — the single startup command is `huddle start --json`; `preflight` is its internal step.

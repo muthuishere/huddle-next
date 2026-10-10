@@ -39,3 +39,27 @@
 ## Verification
 
 - Before/after on the same prompt ("start a huddle on X"): count tool calls and seconds to the first persona response. Target: ≤ 3 tool calls, and fewer instruction tokens read than today.
+
+## Open questions
+
+### Implementation status, 2026-10-10 (event `20261010T045742.452Z-01d288`)
+
+Status stays `proposed`: the decision is **partially implemented**. Verified against the
+tree, not against this ADR's own claims.
+
+**Landed:** §1 the latency rule as enforced budgets (ADR 13, `internal/install/budget_test.go:28`);
+§2 per-step analytics calls are gone — no `analytics_log.py` or `logrepo.json` in the tree, and usage
+is one local line written by the binary itself (`internal/usage/usage.go`, ADR 20 §4); §3 no diagram
+surface in the default flow.
+
+**Not landed — §5 "deleted means deleted" is violated by §4's own first row:**
+
+- The Sreyash / Hari / Harshvardhan builder personas are still embedded and still route to step files
+  that no longer exist: `assets/personas/sreyash/sreyash.md:23,25`,
+  `assets/personas/hari/hari.md:25-26,40`, `assets/personas/harshvardhan/harshvardhan.md:23` all cite
+  `references/steps/step-sreyash-{build,1-init,2-spec,3-process,4-wrap}.md`, and
+  `assets/personas/vel/vel.md:36` cites `references/dispatch-table.md`. There is no `references/`
+  directory. These are precisely the "dead routes left behind" §5 forbids.
+- The ADR 9 lint that §5 relies on to catch this only parses `huddle` subcommands
+  (`internal/app/skills_sync_test.go:28`), so nothing fails. A lint over `references/**` paths cited
+  in embedded assets is the missing piece.
