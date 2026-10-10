@@ -11,6 +11,21 @@ truth; `.github/workflows/npm-publish.yml` runs it.
 | winget | PR to `microsoft/winget-pkgs` | `WINGET_GITHUB_TOKEN`, a fork, public repo | ready, token not set |
 | GitHub Release | tar.gz, zip, `checksums.txt` | `GITHUB_TOKEN` (built in) | **ready** |
 
+**Installing huddle installs the skills.** The skill family is the product, so
+no channel leaves a half-finished install. npm does it in `postinstall` and the
+brew cask in `postflight`, but the guarantee does not rest on those: `huddle
+start` syncs the embedded skills whenever they are absent or stale, which also
+covers apt, dnf, winget, `go install` and a downloaded tarball. Hooks could
+never have covered those — apt and dnf run as root, so there is no user
+`~/.claude` to populate, and winget portables have no post-install hook at all.
+
+Sync writes only where a skill is missing, where huddle owns a stale copy, or
+where the old `install.sh` symlink into a skill repo is still in place — that
+last case is the upgrade. It removes a link, never the repo behind it, and never
+state: memories, personas and the event log live under the config roots, which
+are copied, never overwritten (ADR 6). A dir huddle does not own is reported and
+left alone. Opt out with `HUDDLE_NO_SKILL_SYNC=1` or `"skillSync": false`.
+
 Every optional channel is guarded by `skip_upload`, so a missing token writes
 the artifact to `dist/` and skips the push rather than failing the release.
 That is what makes `goreleaser release --snapshot --clean --skip=publish`
@@ -35,6 +50,10 @@ winget install Muthuishere.Huddle
 # npm, any platform
 npm i -g @muthuishere/huddle
 ```
+
+No `huddle install --skills` step: every one of these leaves the skills
+installed. Run it by hand only to force a reinstall, or with `--force` to take
+over a skill dir huddle does not own.
 
 ## The one real gap: `apt-get install huddle`
 

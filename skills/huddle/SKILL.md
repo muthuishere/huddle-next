@@ -13,7 +13,7 @@ Run `huddle start --skill huddle` once, before anything else. Read its `KEY: val
 
 - `HUDDLE_PROTO: 1` → continue with this file.
 - Missing, different number, or `huddle` not found → **degraded flow**: tell the user
-  "huddle binary missing or out of date — run: npm i -g @muthuishere/huddle && huddle install --skills",
+  "huddle binary missing or out of date — run: npm i -g @muthuishere/huddle (skills install themselves on the next huddle start)",
   then hold a plain 2-persona discussion with no CLI calls and no files written.
 - `MIGRATION_NEEDED: yes` → offer once: `huddle migrate`. Never run it unasked.
 - `REPO_HOOKS_CHANGED: yes` → tell the user and suggest `huddle hooks list`.

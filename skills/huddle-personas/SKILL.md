@@ -13,7 +13,7 @@ Run `huddle start --skill huddle-personas` once. Read the `KEY: value` lines.
 
 - `HUDDLE_PROTO: 1` → continue.
 - Missing / other value / `huddle` not found → **degraded flow**: say
-  "huddle binary missing or out of date — run: npm i -g @muthuishere/huddle && huddle install --skills"
+  "huddle binary missing or out of date — run: npm i -g @muthuishere/huddle (skills install themselves on the next huddle start)"
   and stop; persona files must be written by the CLI, never by hand.
 - `PERSONAS:` shows counts per layer (builtin < global < repo; later layers win).
 

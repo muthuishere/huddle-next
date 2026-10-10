@@ -16,6 +16,7 @@ import (
 	"github.com/muthuishere/huddle/assets"
 	"github.com/muthuishere/huddle/internal/config"
 	"github.com/muthuishere/huddle/internal/eventlog"
+	"github.com/muthuishere/huddle/internal/install"
 	"github.com/muthuishere/huddle/internal/output"
 	"github.com/muthuishere/huddle/internal/paths"
 	"github.com/muthuishere/huddle/internal/repo"
@@ -91,6 +92,9 @@ type StartResult struct {
 	Personas         StartPersonas `json:"personas"`
 	Drafts           int           `json:"drafts"`
 	MigrationNeeded  bool          `json:"migrationNeeded"`
+	SkillsSynced     []string      `json:"skillsSynced,omitempty"`
+	Memories         string        `json:"memoriesCarried,omitempty"`
+	SkillsBlocked    []string      `json:"skillsBlocked,omitempty"`
 	Subagents        string        `json:"subagents"`
 	Next             string        `json:"next"`
 	Partial          bool          `json:"partial"`
@@ -112,11 +116,66 @@ func runStart(c *Ctx, args []string) error {
 	if err != nil {
 		return err
 	}
+	res.SkillsSynced, res.SkillsBlocked, res.Memories = syncSkills(res.Repo.Root)
 	if a.bools["json"] {
 		return output.JSON(c.Stdout, res)
 	}
 	_, err = c.Stdout.Write(renderStart(res))
 	return err
+}
+
+// syncSkills keeps the installed skill family in step with this binary, so that
+// installing huddle through any channel leaves a usable install rather than one
+// that still needs `huddle install --skills`. It writes only where a skill is
+// absent or where huddle owns a stale copy; anything else it reports and leaves.
+// A sync problem is never a reason to fail start.
+func syncSkills(repoRoot string) (synced, blocked []string, memories string) {
+	if install.SyncDisabled(repoRoot) {
+		return nil, nil, ""
+	}
+	targets, err := install.DefaultTargets(false)
+	if err != nil {
+		return nil, nil, ""
+	}
+	results, err := install.Ensure(install.Skills(), targets)
+	if err != nil {
+		return nil, nil, ""
+	}
+	upgraded := false
+	for _, r := range results {
+		switch r.Action {
+		case "pruned-legacy":
+			upgraded = true
+			synced = append(synced, r.Host+"/"+r.Skill)
+		case "installed", "updated":
+			synced = append(synced, r.Host+"/"+r.Skill)
+		case "skipped":
+			blocked = append(blocked, r.Host+"/"+r.Skill+": "+r.Note)
+		}
+	}
+	// Replacing the legacy symlink retires the old skill checkout, so the state
+	// it used to read must come with it or the upgrade loses the user's
+	// memories. The migration copies and never overwrites (ADR 6), so running it
+	// here cannot destroy anything and is safe to repeat.
+	if upgraded && legacyMigrationNeeded() {
+		rep, err := runLegacyMigration(false)
+		if err != nil {
+			blocked = append(blocked, "memories: "+err.Error()+" — run: huddle migrate")
+		} else {
+			events := 0
+			for _, n := range rep.EventsAppended {
+				events += n
+			}
+			for _, n := range rep.RepoPersonas {
+				rep.PersonaFiles += n
+			}
+			if rep.PersonaFiles+events > 0 {
+				memories = fmt.Sprintf("%d persona/memory file(s), %d event(s) copied from the legacy root — originals left in place",
+					rep.PersonaFiles, events)
+			}
+		}
+	}
+	return synced, blocked, memories
 }
 
 type startProbe struct {
@@ -524,6 +583,15 @@ func renderStartWith(r StartResult, width, maxItems int) []byte {
 		repoLine += " (local folder, no git)"
 	}
 	kv("REPO", repoLine)
+	if len(r.SkillsSynced) > 0 {
+		kv("SKILLS_SYNCED", strings.Join(r.SkillsSynced, ", ")+" @ "+r.Version)
+	}
+	if r.Memories != "" {
+		kv("MEMORIES_CARRIED", r.Memories)
+	}
+	for _, line := range r.SkillsBlocked {
+		kv("SKILLS_BLOCKED", line)
+	}
 	kv("ROOT", r.Repo.Root)
 	if r.Config.User != "" {
 		kv("USER", r.Config.User)

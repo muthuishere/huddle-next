@@ -56,6 +56,10 @@ homebrew_casks:
           if OS.mac?
             system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/huddle"]
           end
+          # The skill family is the product, so a brew install should leave it
+          # installed. Best-effort: huddle start syncs it anyway, so a failure
+          # here must not fail the cask.
+          system_command "#{staged_path}/huddle", args: ["install", "--skills"], must_succeed: false
 
 # apt / dnf. Produces .deb and .rpm attached to the release, so
 # `apt install ./huddle_<v>_linux_amd64.deb` works offline and in CI.

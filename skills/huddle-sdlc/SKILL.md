@@ -14,7 +14,7 @@ Run `huddle start --skill huddle-sdlc` once. Read the `KEY: value` lines.
 
 - `HUDDLE_PROTO: 1` → continue.
 - Missing / other value / `huddle` not found → **degraded flow**: say
-  "huddle binary missing or out of date — run: npm i -g @muthuishere/huddle && huddle install --skills",
+  "huddle binary missing or out of date — run: npm i -g @muthuishere/huddle (skills install themselves on the next huddle start)",
   then help with the user's stage conversationally; write no artifacts and claim no gates.
 - `GATES_PENDING` → name them first; they block the stage they guard.
 - `OWNERS: none` → gates need owners: suggest `huddle config set owners.tech-lead '["<name>"]'`.

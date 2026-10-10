@@ -25,6 +25,9 @@
   "bin": {
     "huddle": "bin/huddle.js"
   },
+  "scripts": {
+    "postinstall": "node bin/huddle.js install --skills --json > /dev/null 2>&1 || exit 0"
+  },
   "publishConfig": {
     "access": "public"
   },
