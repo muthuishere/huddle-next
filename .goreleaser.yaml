@@ -36,13 +36,18 @@ archives:
 checksum:
   name_template: checksums.txt
 
+# brew. No tap token (a local snapshot, or a fork's CI) just means the cask is
+# generated under dist/ and not pushed, so `release --snapshot` stays runnable.
 homebrew_casks:
   - name: huddle
     binaries:
       - huddle
+    skip_upload: '{{ if envOrDefault "HOMEBREW_TAP_GITHUB_TOKEN" "" }}false{{ else }}true{{ end }}'
     repository:
       owner: muthuishere
       name: homebrew-tap
+      token: '{{ envOrDefault "HOMEBREW_TAP_GITHUB_TOKEN" "" }}'
+    license: MIT
     homepage: https://github.com/muthuishere/huddle
     description: The AI-native SDLC orchestrator — expert huddles, artifacts, gates and hooks for coding agents.
     hooks:
@@ -51,6 +56,60 @@ homebrew_casks:
           if OS.mac?
             system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/huddle"]
           end
+
+# apt / dnf. Produces .deb and .rpm attached to the release, so
+# `apt install ./huddle_<v>_linux_amd64.deb` works offline and in CI.
+# A bare `apt-get install huddle` needs a hosted, signed APT repository on top
+# of this — see docs/packaging.md.
+nfpms:
+  - id: huddle
+    package_name: huddle
+    vendor: Muthukumaran Navaneethakrishnan
+    homepage: https://github.com/muthuishere/huddle
+    maintainer: Muthukumaran Navaneethakrishnan <muthuishere@gmail.com>
+    description: |-
+      The AI-native SDLC orchestrator.
+      Expert huddles, artifacts, gates and hooks for coding agents.
+    license: MIT
+    formats:
+      - deb
+      - rpm
+    bindir: /usr/bin
+    section: devel
+    contents:
+      - src: LICENSE
+        dst: /usr/share/doc/huddle/LICENSE
+      - src: THIRD-PARTY-LICENSES.md
+        dst: /usr/share/doc/huddle/THIRD-PARTY-LICENSES.md
+
+# winget. Generates the three YAML manifests and opens a PR from the owner's
+# winget-pkgs fork to microsoft/winget-pkgs, where Microsoft's bot validates
+# it. Needs a PUBLIC repo and public release assets to pass validation.
+winget:
+  - name: huddle
+    package_identifier: Muthuishere.Huddle
+    publisher: Muthuishere
+    publisher_url: https://github.com/muthuishere
+    license: MIT
+    homepage: https://github.com/muthuishere/huddle
+    short_description: The AI-native SDLC orchestrator for coding agents.
+    description: |-
+      Expert huddles, artifacts, gates and hooks for coding agents: a Go CLI and
+      skill family that take a team through setup, intent, spec, plan, build,
+      test, deploy review and maintain, with a human gate at every stage.
+    skip_upload: '{{ if envOrDefault "WINGET_GITHUB_TOKEN" "" }}false{{ else }}true{{ end }}'
+    repository:
+      owner: muthuishere
+      name: winget-pkgs
+      branch: huddle-{{ .Version }}
+      token: '{{ envOrDefault "WINGET_GITHUB_TOKEN" "" }}'
+      pull_request:
+        enabled: true
+        draft: false
+        base:
+          owner: microsoft
+          name: winget-pkgs
+          branch: master
 
 release:
   github:

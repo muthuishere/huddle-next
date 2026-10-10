@@ -41,12 +41,22 @@ jobs:
           v=$(node -p "require('./npm/package.json').version")
           test "$tag" = "$v" || { echo "tag v$tag != npm/package.json $v — run: task release:version VERSION=$tag"; exit 1; }
 
-      - name: Build release binaries for npm packages
+      - name: Release binaries, archives, deb/rpm, cask and winget manifests
         uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6
         with:
           distribution: goreleaser
           version: latest
-          args: release --clean --skip=publish
+          args: release --clean
+        env:
+          # Creates the GitHub Release and uploads archives, checksums, .deb and
+          # .rpm. Without this the tag produces no downloadable artifact at all.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Each of these is optional by construction: the matching skip_upload
+          # guard in .goreleaser.yaml generates the artifact under dist/ and
+          # skips the push when the token is absent, so a missing secret never
+          # fails the release.
+          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+          WINGET_GITHUB_TOKEN: ${{ secrets.WINGET_GITHUB_TOKEN }}
 
       - name: Publish npm packages with trusted publishing
         run: scripts/npm-publish-oidc.sh
