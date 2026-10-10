@@ -7,8 +7,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/muthuishere/huddle/internal/config"
-	"github.com/muthuishere/huddle/internal/output"
+	"github.com/muthuishere/huddle-next/internal/config"
+	"github.com/muthuishere/huddle-next/internal/output"
 )
 
 func init() {

@@ -12,15 +12,15 @@
     "personas",
     "cli"
   ],
-  "homepage": "https://github.com/muthuishere/huddle",
+  "homepage": "https://github.com/muthuishere/huddle-next",
   "bugs": {
-    "url": "https://github.com/muthuishere/huddle/issues"
+    "url": "https://github.com/muthuishere/huddle-next/issues"
   },
   "author": "Muthukumaran Navaneethakrishnan",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/muthuishere/huddle.git"
+    "url": "git+https://github.com/muthuishere/huddle-next.git"
   },
   "bin": {
     "huddle": "bin/huddle.js"

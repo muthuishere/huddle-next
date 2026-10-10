@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/muthuishere/huddle/internal/config"
-	"github.com/muthuishere/huddle/internal/eventlog"
-	"github.com/muthuishere/huddle/internal/output"
-	"github.com/muthuishere/huddle/internal/paths"
-	"github.com/muthuishere/huddle/internal/redact"
+	"github.com/muthuishere/huddle-next/internal/config"
+	"github.com/muthuishere/huddle-next/internal/eventlog"
+	"github.com/muthuishere/huddle-next/internal/output"
+	"github.com/muthuishere/huddle-next/internal/paths"
+	"github.com/muthuishere/huddle-next/internal/redact"
 )
 
 func init() {

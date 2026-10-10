@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/muthuishere/huddle/internal/artifacts"
-	"github.com/muthuishere/huddle/internal/gates"
-	"github.com/muthuishere/huddle/internal/output"
+	"github.com/muthuishere/huddle-next/internal/artifacts"
+	"github.com/muthuishere/huddle-next/internal/gates"
+	"github.com/muthuishere/huddle-next/internal/output"
 )
 
 func init() {

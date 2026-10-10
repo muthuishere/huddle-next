@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/muthuishere/huddle/internal/paths"
+	"github.com/muthuishere/huddle-next/internal/paths"
 )
 
 func TestHooksListTestFireExport(t *testing.T) {

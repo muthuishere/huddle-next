@@ -5,7 +5,7 @@ import (
 	"io/fs"
 	"strings"
 
-	"github.com/muthuishere/huddle/assets"
+	"github.com/muthuishere/huddle-next/assets"
 )
 
 // CIDrafts maps a draft name to its template and default workflow path.

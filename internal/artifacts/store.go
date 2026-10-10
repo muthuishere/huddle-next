@@ -16,8 +16,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/muthuishere/huddle/assets"
-	"github.com/muthuishere/huddle/internal/config"
+	"github.com/muthuishere/huddle-next/assets"
+	"github.com/muthuishere/huddle-next/internal/config"
 )
 
 // Artifact is one discovered file. Status, Author and Links come from the file.

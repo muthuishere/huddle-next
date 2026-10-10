@@ -12,10 +12,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/muthuishere/huddle/internal/gates"
-	"github.com/muthuishere/huddle/internal/repo"
-	"github.com/muthuishere/huddle/internal/usage"
-	"github.com/muthuishere/huddle/internal/version"
+	"github.com/muthuishere/huddle-next/internal/gates"
+	"github.com/muthuishere/huddle-next/internal/repo"
+	"github.com/muthuishere/huddle-next/internal/usage"
+	"github.com/muthuishere/huddle-next/internal/version"
 )
 
 // Command is one top-level noun or verb, e.g. "start", "persona", "intent".

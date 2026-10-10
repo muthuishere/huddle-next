@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/muthuishere/huddle/internal/gates"
-	"github.com/muthuishere/huddle/internal/sdlc"
+	"github.com/muthuishere/huddle-next/internal/gates"
+	"github.com/muthuishere/huddle-next/internal/sdlc"
 )
 
 func sdlcReport(t *testing.T, root string) sdlc.Report {

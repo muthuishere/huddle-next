@@ -13,14 +13,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/muthuishere/huddle/assets"
-	"github.com/muthuishere/huddle/internal/config"
-	"github.com/muthuishere/huddle/internal/eventlog"
-	"github.com/muthuishere/huddle/internal/install"
-	"github.com/muthuishere/huddle/internal/output"
-	"github.com/muthuishere/huddle/internal/paths"
-	"github.com/muthuishere/huddle/internal/repo"
-	"github.com/muthuishere/huddle/internal/version"
+	"github.com/muthuishere/huddle-next/assets"
+	"github.com/muthuishere/huddle-next/internal/config"
+	"github.com/muthuishere/huddle-next/internal/eventlog"
+	"github.com/muthuishere/huddle-next/internal/install"
+	"github.com/muthuishere/huddle-next/internal/output"
+	"github.com/muthuishere/huddle-next/internal/paths"
+	"github.com/muthuishere/huddle-next/internal/repo"
+	"github.com/muthuishere/huddle-next/internal/version"
 )
 
 func init() {

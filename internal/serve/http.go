@@ -13,9 +13,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/muthuishere/huddle/internal/config"
-	"github.com/muthuishere/huddle/internal/paths"
-	"github.com/muthuishere/huddle/internal/repo"
+	"github.com/muthuishere/huddle-next/internal/config"
+	"github.com/muthuishere/huddle-next/internal/paths"
+	"github.com/muthuishere/huddle-next/internal/repo"
 )
 
 // httpError carries a status code out of a handler.

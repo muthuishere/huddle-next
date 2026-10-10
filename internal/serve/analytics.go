@@ -5,7 +5,7 @@ package serve
 import (
 	"net/http"
 
-	"github.com/muthuishere/huddle/internal/usage"
+	"github.com/muthuishere/huddle-next/internal/usage"
 )
 
 // defaultAnalyticsSince matches `huddle stats` (ADR 20 §4).

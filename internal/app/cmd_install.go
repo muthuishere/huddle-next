@@ -3,8 +3,8 @@ package app
 import (
 	"fmt"
 
-	"github.com/muthuishere/huddle/internal/install"
-	"github.com/muthuishere/huddle/internal/output"
+	"github.com/muthuishere/huddle-next/internal/install"
+	"github.com/muthuishere/huddle-next/internal/output"
 )
 
 func init() {

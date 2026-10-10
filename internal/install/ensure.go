@@ -14,8 +14,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/muthuishere/huddle/internal/paths"
-	"github.com/muthuishere/huddle/internal/version"
+	"github.com/muthuishere/huddle-next/internal/paths"
+	"github.com/muthuishere/huddle-next/internal/version"
 )
 
 // EnvNoSync disables automatic skill sync when set to 1/true/yes/on.

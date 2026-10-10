@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/muthuishere/huddle/internal/paths"
+	"github.com/muthuishere/huddle-next/internal/paths"
 )
 
 func write(t *testing.T, path, body string) {

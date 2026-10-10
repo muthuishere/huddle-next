@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/muthuishere/huddle/internal/app"
+	"github.com/muthuishere/huddle-next/internal/app"
 )
 
 func main() {

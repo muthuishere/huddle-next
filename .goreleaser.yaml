@@ -11,7 +11,7 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - -s -w -X github.com/muthuishere/huddle/internal/version.Version={{ .Version }} -X github.com/muthuishere/huddle/internal/version.Commit={{ .ShortCommit }} -X github.com/muthuishere/huddle/internal/version.Date={{ .Date }}
+      - -s -w -X github.com/muthuishere/huddle-next/internal/version.Version={{ .Version }} -X github.com/muthuishere/huddle-next/internal/version.Commit={{ .ShortCommit }} -X github.com/muthuishere/huddle-next/internal/version.Date={{ .Date }}
     goos:
       - darwin
       - linux
@@ -48,7 +48,7 @@ homebrew_casks:
       name: homebrew-tap
       token: '{{ envOrDefault "HOMEBREW_TAP_GITHUB_TOKEN" "" }}'
     license: MIT
-    homepage: https://github.com/muthuishere/huddle
+    homepage: https://github.com/muthuishere/huddle-next
     description: The AI-native SDLC orchestrator — expert huddles, artifacts, gates and hooks for coding agents.
     hooks:
       post:
@@ -69,7 +69,7 @@ nfpms:
   - id: huddle
     package_name: huddle
     vendor: Muthukumaran Navaneethakrishnan
-    homepage: https://github.com/muthuishere/huddle
+    homepage: https://github.com/muthuishere/huddle-next
     maintainer: Muthukumaran Navaneethakrishnan <muthuishere@gmail.com>
     description: |-
       The AI-native SDLC orchestrator.
@@ -95,7 +95,7 @@ winget:
     publisher: Muthuishere
     publisher_url: https://github.com/muthuishere
     license: MIT
-    homepage: https://github.com/muthuishere/huddle
+    homepage: https://github.com/muthuishere/huddle-next
     short_description: The AI-native SDLC orchestrator for coding agents.
     description: |-
       Expert huddles, artifacts, gates and hooks for coding agents: a Go CLI and
@@ -118,4 +118,4 @@ winget:
 release:
   github:
     owner: muthuishere
-    name: huddle
+    name: huddle-next

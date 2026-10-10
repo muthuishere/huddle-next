@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/muthuishere/huddle/internal/config"
+	"github.com/muthuishere/huddle-next/internal/config"
 )
 
 func writtenPack(t *testing.T, extra map[string]string) (string, Pack) {

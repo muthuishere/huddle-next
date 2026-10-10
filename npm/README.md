@@ -20,7 +20,7 @@ Also available via:
 
 ```sh
 brew install --cask muthuishere/tap/huddle
-go install github.com/muthuishere/huddle/cmd/huddle@latest
+go install github.com/muthuishere/huddle-next/cmd/huddle@latest
 ```
 
 ## Use

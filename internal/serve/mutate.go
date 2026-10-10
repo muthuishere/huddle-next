@@ -9,10 +9,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/muthuishere/huddle/internal/artifacts"
-	"github.com/muthuishere/huddle/internal/eventlog"
-	"github.com/muthuishere/huddle/internal/hooks"
-	"github.com/muthuishere/huddle/internal/redact"
+	"github.com/muthuishere/huddle-next/internal/artifacts"
+	"github.com/muthuishere/huddle-next/internal/eventlog"
+	"github.com/muthuishere/huddle-next/internal/hooks"
+	"github.com/muthuishere/huddle-next/internal/redact"
 )
 
 // env builds the audit bundle artifact writes need.

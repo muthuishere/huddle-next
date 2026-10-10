@@ -7,10 +7,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/muthuishere/huddle/internal/artifacts"
-	"github.com/muthuishere/huddle/internal/config"
-	"github.com/muthuishere/huddle/internal/hooks"
-	"github.com/muthuishere/huddle/internal/output"
+	"github.com/muthuishere/huddle-next/internal/artifacts"
+	"github.com/muthuishere/huddle-next/internal/config"
+	"github.com/muthuishere/huddle-next/internal/hooks"
+	"github.com/muthuishere/huddle-next/internal/output"
 )
 
 // artFire runs hooks for artifact writes and gates; tests swap it.

@@ -47,7 +47,7 @@ func TestStringKeepsOrdinaryText(t *testing.T) {
 		"",
 		"run go test ./... then commit",
 		"the token bucket refills every second",
-		"see https://github.com/muthuishere/huddle/pull/7",
+		"see https://github.com/muthuishere/huddle-next/pull/7",
 		"sha 6f869ed docs: add MIT LICENSE",
 		"author: Muthukumaran",
 	} {

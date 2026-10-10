@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/muthuishere/huddle/internal/output"
-	"github.com/muthuishere/huddle/internal/redact"
+	"github.com/muthuishere/huddle-next/internal/output"
+	"github.com/muthuishere/huddle-next/internal/redact"
 )
 
 func init() {

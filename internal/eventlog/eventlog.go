@@ -14,7 +14,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/muthuishere/huddle/internal/paths"
+	"github.com/muthuishere/huddle-next/internal/paths"
 )
 
 // Event is one log line. Data holds type-specific fields.

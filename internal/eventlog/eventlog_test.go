@@ -9,7 +9,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/muthuishere/huddle/internal/paths"
+	"github.com/muthuishere/huddle-next/internal/paths"
 )
 
 func TestConcurrentAppend(t *testing.T) {

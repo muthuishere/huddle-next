@@ -13,8 +13,8 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/muthuishere/huddle/assets"
-	"github.com/muthuishere/huddle/internal/paths"
+	"github.com/muthuishere/huddle-next/assets"
+	"github.com/muthuishere/huddle-next/internal/paths"
 )
 
 // Layer names a persona layer, lowest precedence first (ADR 3).

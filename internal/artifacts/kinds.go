@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/muthuishere/huddle/internal/config"
+	"github.com/muthuishere/huddle-next/internal/config"
 )
 
 // Format of an artifact file.

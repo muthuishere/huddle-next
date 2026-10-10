@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/muthuishere/huddle/internal/eventlog"
-	"github.com/muthuishere/huddle/internal/output"
-	"github.com/muthuishere/huddle/internal/personas"
+	"github.com/muthuishere/huddle-next/internal/eventlog"
+	"github.com/muthuishere/huddle-next/internal/output"
+	"github.com/muthuishere/huddle-next/internal/personas"
 )
 
 func init() {

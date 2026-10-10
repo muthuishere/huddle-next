@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/muthuishere/huddle/internal/repo"
-	"github.com/muthuishere/huddle/internal/serve"
+	"github.com/muthuishere/huddle-next/internal/repo"
+	"github.com/muthuishere/huddle-next/internal/serve"
 )
 
 func init() {

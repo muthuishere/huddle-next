@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/muthuishere/huddle/internal/config"
-	"github.com/muthuishere/huddle/internal/eventlog"
-	"github.com/muthuishere/huddle/internal/paths"
+	"github.com/muthuishere/huddle-next/internal/config"
+	"github.com/muthuishere/huddle-next/internal/eventlog"
+	"github.com/muthuishere/huddle-next/internal/paths"
 )
 
 // coreEnv isolates HUDDLE_HOME and HOME and returns a fake git repo root.

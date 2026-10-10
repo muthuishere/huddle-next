@@ -10,13 +10,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/muthuishere/huddle/internal/artifacts"
-	"github.com/muthuishere/huddle/internal/config"
-	"github.com/muthuishere/huddle/internal/gates"
-	"github.com/muthuishere/huddle/internal/hooks"
-	"github.com/muthuishere/huddle/internal/paths"
-	"github.com/muthuishere/huddle/internal/personas"
-	"github.com/muthuishere/huddle/internal/sdlc"
+	"github.com/muthuishere/huddle-next/internal/artifacts"
+	"github.com/muthuishere/huddle-next/internal/config"
+	"github.com/muthuishere/huddle-next/internal/gates"
+	"github.com/muthuishere/huddle-next/internal/hooks"
+	"github.com/muthuishere/huddle-next/internal/paths"
+	"github.com/muthuishere/huddle-next/internal/personas"
+	"github.com/muthuishere/huddle-next/internal/sdlc"
 )
 
 // Warning is one overview callout.

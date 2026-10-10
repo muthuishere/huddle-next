@@ -18,8 +18,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/muthuishere/huddle/internal/version"
-	"github.com/muthuishere/huddle/skills"
+	"github.com/muthuishere/huddle-next/internal/version"
+	"github.com/muthuishere/huddle-next/skills"
 )
 
 // Marker is the ownership file written into every installed skill dir.

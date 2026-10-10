@@ -9,7 +9,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/muthuishere/huddle/internal/config"
+	"github.com/muthuishere/huddle-next/internal/config"
 )
 
 // Defaults for the Claude hook pack when config sets nothing.

@@ -15,7 +15,7 @@ npm install -g @muthuishere/huddle
 huddle install --skills          # huddle, huddle-sdlc, huddle-personas
 ```
 
-Or build from source: `go install github.com/muthuishere/huddle/cmd/huddle@latest`.
+Or build from source: `go install github.com/muthuishere/huddle-next/cmd/huddle@latest`.
 
 ## Usage
 

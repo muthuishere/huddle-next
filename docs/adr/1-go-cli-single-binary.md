@@ -6,7 +6,7 @@
 
 ## Decision
 
-1. **Huddle ships as one Go binary named `huddle`**, module `github.com/muthuishere/huddle`. All eight Python helpers (`global_state`, `project_state`, `session_state`, `synced_assets`, `config_helper`, `repo_context`, `huddle_writer`, `migrate`) become subcommands. No Python at runtime.
+1. **Huddle ships as one Go binary named `huddle`**, module `github.com/muthuishere/huddle-next`. All eight Python helpers (`global_state`, `project_state`, `session_state`, `synced_assets`, `config_helper`, `repo_context`, `huddle_writer`, `migrate`) become subcommands. No Python at runtime.
 2. **CGO is off** (`CGO_ENABLED=0`). Any SQLite need (ADR 8) uses `modernc.org/sqlite`, as crossmem does.
 3. **Distribution copies crossmemcli exactly:** goreleaser builds darwin/linux × amd64/arm64 + windows/amd64; a post-build hook drops each binary into `npm/platforms/<os>-<arch>/bin/`; `@muthuishere/huddle` is a thin JS launcher whose `optionalDependencies` are the platform packages; release on `v*` tag via npm OIDC trusted publishing, platform packages first; Homebrew cask in `muthuishere/homebrew-tap`. The npm package is an installer, never a second implementation.
 4. **The skill is embedded in the binary** (`//go:embed`: `SKILL.md`, `references/**`, built-in personas). `huddle install --skills` writes it atomically (temp dir → rename) to every detected harness target; `huddle uninstall --skills` removes only those directories and never touches state.

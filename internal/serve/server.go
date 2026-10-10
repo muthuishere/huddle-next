@@ -17,10 +17,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/muthuishere/huddle/internal/artifacts"
-	"github.com/muthuishere/huddle/internal/hooks"
-	"github.com/muthuishere/huddle/internal/repo"
-	"github.com/muthuishere/huddle/web"
+	"github.com/muthuishere/huddle-next/internal/artifacts"
+	"github.com/muthuishere/huddle-next/internal/hooks"
+	"github.com/muthuishere/huddle-next/internal/repo"
+	"github.com/muthuishere/huddle-next/web"
 )
 
 // DefaultPort is the dashboard's well-known port.

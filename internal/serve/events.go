@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/muthuishere/huddle/internal/eventlog"
-	"github.com/muthuishere/huddle/internal/paths"
+	"github.com/muthuishere/huddle-next/internal/eventlog"
+	"github.com/muthuishere/huddle-next/internal/paths"
 )
 
 // EventView is an event plus whether a later supersede event replaced it.

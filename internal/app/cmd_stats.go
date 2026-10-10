@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/muthuishere/huddle/internal/output"
-	"github.com/muthuishere/huddle/internal/usage"
+	"github.com/muthuishere/huddle-next/internal/output"
+	"github.com/muthuishere/huddle-next/internal/usage"
 )
 
 func init() {

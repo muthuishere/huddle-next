@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/muthuishere/huddle/internal/eventlog"
+	"github.com/muthuishere/huddle-next/internal/eventlog"
 )
 
 const bandsTestYAML = `metric: checkout_p95_ms

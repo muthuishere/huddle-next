@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/muthuishere/huddle/internal/paths"
+	"github.com/muthuishere/huddle-next/internal/paths"
 )
 
 // Hook is one lifecycle hook (ADR 17, 19). The user owns it; huddle just runs it.

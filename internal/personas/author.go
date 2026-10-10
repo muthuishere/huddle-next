@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/muthuishere/huddle/internal/paths"
-	"github.com/muthuishere/huddle/internal/redact"
+	"github.com/muthuishere/huddle-next/internal/paths"
+	"github.com/muthuishere/huddle-next/internal/redact"
 )
 
 // redactString is the redaction choke point; a var so tests can observe calls.

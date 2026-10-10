@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/muthuishere/huddle.git"
+    "url": "git+https://github.com/muthuishere/huddle-next.git"
   },
   "publishConfig": {
     "access": "public"

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/muthuishere/huddle/internal/install"
+	"github.com/muthuishere/huddle-next/internal/install"
 )
 
 // skillCommand is one `huddle <cmd> ...` usage found in an embedded skill file.

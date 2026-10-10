@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/muthuishere/huddle/internal/paths"
+	"github.com/muthuishere/huddle-next/internal/paths"
 )
 
 // Entry is one CLI invocation. It never contains arguments or free text.

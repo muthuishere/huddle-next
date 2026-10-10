@@ -5,9 +5,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/muthuishere/huddle/internal/artifacts"
-	"github.com/muthuishere/huddle/internal/gates"
-	"github.com/muthuishere/huddle/internal/output"
+	"github.com/muthuishere/huddle-next/internal/artifacts"
+	"github.com/muthuishere/huddle-next/internal/gates"
+	"github.com/muthuishere/huddle-next/internal/output"
 )
 
 // gateInteractive reports whether a human is at the terminal; tests swap it.

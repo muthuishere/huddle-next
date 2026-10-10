@@ -38,7 +38,7 @@ runnable on a laptop.
 brew install --cask muthuishere/tap/huddle
 
 # Debian / Ubuntu — from the release asset
-curl -LO https://github.com/muthuishere/huddle/releases/latest/download/huddle_<version>_linux_amd64.deb
+curl -LO https://github.com/muthuishere/huddle-next/releases/latest/download/huddle_<version>_linux_amd64.deb
 sudo apt install ./huddle_<version>_linux_amd64.deb
 
 # Fedora / RHEL
@@ -86,7 +86,7 @@ Ordered, because several steps depend on the repo being public.
 2. **Bootstrap the six npm packages.** Trusted publishing is configured per
    package in npm's web UI, which cannot be done for a package that does not
    exist. Publish each once from a granular token, then set Trusted Publisher →
-   GitHub Actions → `muthuishere/huddle` → `npm-publish.yml` on all six.
+   GitHub Actions → `muthuishere/huddle-next` → `npm-publish.yml` on all six.
 3. **Create `muthuishere/homebrew-tap`** if absent (it exists, holding
    `Casks/crossmem.rb`) and add `HOMEBREW_TAP_GITHUB_TOKEN` — a fine-grained
    token with `contents: write` on that repo only.

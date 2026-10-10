@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/muthuishere/huddle/internal/artifacts"
-	"github.com/muthuishere/huddle/internal/output"
-	"github.com/muthuishere/huddle/internal/sdlc"
+	"github.com/muthuishere/huddle-next/internal/artifacts"
+	"github.com/muthuishere/huddle-next/internal/output"
+	"github.com/muthuishere/huddle-next/internal/sdlc"
 )
 
 func init() {

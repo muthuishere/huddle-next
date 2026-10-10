@@ -10,13 +10,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/muthuishere/huddle/internal/paths"
+	"github.com/muthuishere/huddle-next/internal/paths"
 )
 
 // EvidenceSchema is the JSON Schema for one evidence NDJSON record (ADR 10 §2).
 const EvidenceSchema = `{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/muthuishere/huddle/schemas/persona-evidence.json",
+  "$id": "https://github.com/muthuishere/huddle-next/schemas/persona-evidence.json",
   "title": "huddle persona evidence record (one NDJSON line)",
   "type": "object",
   "required": ["text"],

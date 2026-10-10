@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/muthuishere/huddle/internal/config"
+	"github.com/muthuishere/huddle-next/internal/config"
 )
 
 func skipWindows(t *testing.T) {

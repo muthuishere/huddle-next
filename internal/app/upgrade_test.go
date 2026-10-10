@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/muthuishere/huddle/internal/install"
-	"github.com/muthuishere/huddle/internal/paths"
+	"github.com/muthuishere/huddle-next/internal/install"
+	"github.com/muthuishere/huddle-next/internal/paths"
 )
 
 // TestUpgradeReplacesLegacyLinkAndKeepsMemories is the upgrade contract: taking

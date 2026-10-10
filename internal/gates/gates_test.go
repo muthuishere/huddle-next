@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/muthuishere/huddle/internal/config"
-	"github.com/muthuishere/huddle/internal/repo"
+	"github.com/muthuishere/huddle-next/internal/config"
+	"github.com/muthuishere/huddle-next/internal/repo"
 )
 
 func TestDeciderRefusesAgents(t *testing.T) {
