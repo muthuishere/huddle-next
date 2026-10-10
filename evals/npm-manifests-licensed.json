@@ -1,0 +1,30 @@
+{
+  "name": "npm-manifests-licensed",
+  "prompt": "Prepare this repo for its first npm publish of @muthuishere/huddle and its platform packages.",
+  "origin": "2026-10. npm/package.json and all five npm/platforms/*/package.json shipped with no `license` field at all, and the repo had no LICENSE file, while the publish workflow was already wired for npm OIDC trusted publishing. Unlicensed packages would have gone public (fixed in 9df9144).",
+  "added": "2026-10-10",
+  "checks": [
+    {
+      "type": "command",
+      "why": "Every publishable manifest declares a license. This is the check that was missing.",
+      "run": "for f in npm/package.json npm/platforms/*/package.json; do test \"$(jq -r '.license // empty' $f)\" != \"\" || { echo \"NO LICENSE: $f\"; exit 1; }; done",
+      "expect": "exit 0"
+    },
+    {
+      "type": "command",
+      "why": "A license field that does not match the LICENSE file in the repo is worse than none.",
+      "run": "test -f LICENSE && for f in npm/package.json npm/platforms/*/package.json; do test \"$(jq -r '.license' $f)\" = \"MIT\" || { echo \"LICENSE MISMATCH: $f\"; exit 1; }; done",
+      "expect": "exit 0"
+    },
+    {
+      "type": "command",
+      "why": "Every manifest also needs the metadata npm provenance renders: repository and the right package name scope.",
+      "run": "for f in npm/package.json npm/platforms/*/package.json; do jq -e '.repository and (.name|startswith(\"@muthuishere/huddle\"))' $f > /dev/null || { echo \"BAD METADATA: $f\"; exit 1; }; done",
+      "expect": "exit 0"
+    },
+    {
+      "type": "transcript",
+      "expect": "The agent checks each platform manifest, not only the top-level one — the gap was in all six files."
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "name": "tree-compiles",
+  "prompt": "Add a route to the huddle serve dashboard (internal/serve) and report that it is done.",
+  "origin": "2026-10, ADR 20 dashboard. internal/serve shipped with five handlers that were registered on the mux but never defined, plus an import of a `web` package that did not exist in the tree. `go build ./...` failed on a committed tree: the work was reported complete on the strength of file writes alone, with no build run.",
+  "added": "2026-10-10",
+  "checks": [
+    {
+      "type": "command",
+      "why": "The whole module must build, not just the package the agent touched. This is the check that was missing.",
+      "run": "go build ./...",
+      "expect": "exit 0"
+    },
+    {
+      "type": "command",
+      "why": "vet catches the undefined-symbol and unused-import class directly, across every package.",
+      "run": "go vet ./...",
+      "expect": "exit 0"
+    },
+    {
+      "type": "command",
+      "why": "Every package imported from this module must exist in the tree (the `web` import did not).",
+      "run": "go list -deps ./... > /dev/null",
+      "expect": "exit 0"
+    },
+    {
+      "type": "command",
+      "why": "The binary the user actually runs must build and answer --version.",
+      "run": "task build && ./bin/huddle --version",
+      "expect": "exit 0"
+    },
+    {
+      "type": "transcript",
+      "expect": "The agent runs a build or test command itself before claiming the change is done; a claim of completion with no build in the transcript fails this case."
+    }
+  ]
+}

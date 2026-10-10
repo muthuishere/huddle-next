@@ -1,0 +1,34 @@
+{
+  "name": "skill-mode-parity",
+  "prompt": "In this repo, ask the huddle skill to run a research round: \"research what competing AI-native SDLC tools do about human gates, with sources\". The agent must load the matching mode file and follow it.",
+  "origin": "2026-10 port of the Python huddle skill to Go. The legacy skill routed six modes (discussion, research, spec-review, planning, verification, wrap-up); only three were carried into skills/. `grep -ri research skills/` returned nothing, so every research request silently fell back to the generic discussion flow, and nobody noticed because no check compared the router's mode list with the files on disk.",
+  "added": "2026-10-10",
+  "checks": [
+    {
+      "type": "command",
+      "why": "Every mode the SKILL.md router names must exist as a file. This is the check that was missing.",
+      "run": "for m in $(grep -oE 'modes/[a-z-]+\\.md' skills/huddle/SKILL.md | sort -u); do test -f \"skills/huddle/$m\" || { echo \"MISSING skills/huddle/$m\"; exit 1; }; done",
+      "expect": "exit 0"
+    },
+    {
+      "type": "command",
+      "why": "Reverse direction: a mode file nobody routes to is dead weight and will drift.",
+      "run": "for f in skills/huddle/modes/*.md; do grep -q \"modes/$(basename $f)\" skills/huddle/SKILL.md || { echo \"UNROUTED $f\"; exit 1; }; done",
+      "expect": "exit 0"
+    },
+    {
+      "type": "command",
+      "why": "Legacy parity: each mode the Python skill supported is either present or recorded as deliberately dropped in an ADR.",
+      "run": "for m in discussion research spec-review planning verification wrap-up; do test -f \"skills/huddle/modes/$m.md\" || grep -rqi \"$m\" docs/adr/ || { echo \"DROPPED WITHOUT A RECORD: $m\"; exit 1; }; done",
+      "expect": "exit 0"
+    },
+    {
+      "type": "transcript",
+      "expect": "The agent reads skills/huddle/modes/research.md (not modes/discussion.md) before the first persona speaks."
+    },
+    {
+      "type": "transcript-absent",
+      "expect": "No turn invents a research procedure that is not in the mode file."
+    }
+  ]
+}
