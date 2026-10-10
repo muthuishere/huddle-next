@@ -1,6 +1,6 @@
 ---
 name: huddle
-description: Expert room for engineering decisions, verification and wrap-up. Use for "start a huddle", "huddle up", "what does the team think", "pressure-test this", "what did we decide", "wrap up". Not for SDLC stages or persona authoring.
+description: Expert room for decisions, research, verification and wrap-up. Use for "start a huddle", "huddle up", "what does the team think", "pressure-test this", "what's new in X", "what did we decide", "wrap up". Not for SDLC stages or persona authoring.
 ---
 
 # Huddle — the room
@@ -30,6 +30,7 @@ Do not re-read config, logs, or git with other tools — `start` already did.
 |---|---|
 | discuss, debate, tradeoffs, "what do you think", "help me think" | `modes/discussion.md` |
 | verify, pressure-test, "is this done", "is this sound", review a claim | `modes/verification.md` |
+| "what's happening in", latest / trends on a topic, gather sources, ecosystem scan | `modes/research.md` |
 | "wrap up", "that's enough", "save and pause", "summarise", "action items" | `modes/wrap-up.md` |
 | intent / spec / plan / deploy / CLAUDE.md / "what stage are we in" | hand off to the `huddle-sdlc` skill |
 | create, import, or style a persona | hand off to the `huddle-personas` skill |
