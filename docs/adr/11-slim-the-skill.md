@@ -1,8 +1,20 @@
+---
+id: adr-11
+kind: adr
+status: proposed
+author: muthuishere
+links: {}
+---
 # ADR 11: Cut or Lazy-Load Everything That Costs Time
 
-- Status: proposed
 - Date: 2026-09-14
 - v1: built (ADR 19)
+
+## Status
+
+**proposed** — the decision stands; it is only partly implemented. The `v1:` line above and
+**Open questions** name which clauses landed and which did not. The front matter `status:` field
+is the status of record.
 
 ## Decision
 
@@ -63,3 +75,16 @@ surface in the default flow.
 - The ADR 9 lint that §5 relies on to catch this only parses `huddle` subcommands
   (`internal/app/skills_sync_test.go:28`), so nothing fails. A lint over `references/**` paths cited
   in embedded assets is the missing piece.
+
+## binds
+
+- A feature stays on the default huddle path only if it earns its latency; everything else is
+  on-demand or removed.
+- Usage accounting costs zero extra tool calls — the binary records one local line per command it
+  already runs.
+
+## prevents
+
+- No per-step analytics shell calls.
+- No diagram, graph or other visual surface on the default flow.
+- No remote telemetry, ever.

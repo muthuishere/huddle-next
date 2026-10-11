@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"testing"
@@ -14,6 +16,7 @@ import (
 	"github.com/muthuishere/huddle-next/internal/config"
 	"github.com/muthuishere/huddle-next/internal/eventlog"
 	"github.com/muthuishere/huddle-next/internal/paths"
+	"github.com/muthuishere/huddle-next/internal/usage"
 )
 
 // TestMain puts the real agent skill roots out of reach for the whole package.
@@ -272,9 +275,18 @@ func TestStartOutputBudget(t *testing.T) {
 	if err := json.Unmarshal([]byte(out), &res); err != nil {
 		t.Fatal(err)
 	}
-	if res.RepoHooksChanged || res.Proto != 1 || len(res.Decisions) != 5 || len(res.Learnings) != 3 || res.Partial {
-		t.Fatalf("unexpected start json: changed=%v proto=%d decisions=%d learnings=%d partial=%v %v",
-			res.RepoHooksChanged, res.Proto, len(res.Decisions), len(res.Learnings), res.Partial, res.Errors)
+	// --json is held to the same ceiling as the text output (ADR 13, 19): with
+	// 40 oversized items per list the item lines go, the counts stay.
+	if len(out) > startBudgetBytes {
+		t.Fatalf("start --json %d bytes > %d:\n%s", len(out), startBudgetBytes, out)
+	}
+	if res.RepoHooksChanged || res.Proto != 1 || res.Partial {
+		t.Fatalf("unexpected start json: changed=%v proto=%d partial=%v %v",
+			res.RepoHooksChanged, res.Proto, res.Partial, res.Errors)
+	}
+	if res.DecisionsActive != 40 || res.GatesPending != 40 || res.LearningsTotal != startLearnings || res.ItemsElided == 0 {
+		t.Fatalf("truncation lost the counts: decisions=%d gates=%d learnings=%d elided=%d",
+			res.DecisionsActive, res.GatesPending, res.LearningsTotal, res.ItemsElided)
 	}
 }
 
@@ -369,7 +381,154 @@ func BenchmarkStart(b *testing.B) {
 	}
 }
 
-func TestStartP50Budget(t *testing.T) {
+// Events the CLI appends itself have no `text` field — `log list` and
+// `timeline` used to print an empty TEXT column for them, so the file that was
+// written could only be found by reading events.jsonl by hand.
+func TestLogListAndTimelineRenderStructuredEvents(t *testing.T) {
+	root := coreEnv(t)
+	if _, err := eventlog.Append("proj", eventlog.Event{
+		Type: "artifact.written", By: "muthu", Branch: "main", Refs: []string{"intent:v1-readiness"},
+		Artifact: &eventlog.ArtifactRef{Kind: "intent", Path: "intent/v1-readiness/intent.md", SHA256: "deadbeef"},
+		Data:     map[string]any{"id": "intent:v1-readiness", "action": "new"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := eventlog.Append("proj", eventlog.Event{
+		Type: "gate.request", By: "muthu", Branch: "main", Refs: []string{"spec:login"},
+		Artifact: &eventlog.ArtifactRef{Kind: "spec", Path: "intent/login/spec.md"},
+		Data:     map[string]any{"gate": "g7", "name": "spec", "role": "tech-lead", "artifactId": "spec:login"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for _, cmd := range []string{"log", "timeline"} {
+		args := []string{cmd}
+		if cmd == "log" {
+			args = append(args, "list")
+		}
+		out, err := runCore(t, root, args...)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, want := range []string{"intent/v1-readiness/intent.md", "action=new", "intent/login/spec.md", "gate=g7"} {
+			if !strings.Contains(out, want) {
+				t.Errorf("huddle %s output missing %q:\n%s", strings.Join(args, " "), want, out)
+			}
+		}
+		if strings.Contains(out, "deadbeef") {
+			t.Errorf("huddle %s should not print the artifact hash:\n%s", strings.Join(args, " "), out)
+		}
+	}
+}
+
+// Every command `huddle stats` can show needs a p50 budget, or the BUDGET
+// column cannot say whether the command is fast or slow. Two commands are
+// deliberately exempt and documented in usage.Budgets.
+func TestEveryCommandHasALatencyBudget(t *testing.T) {
+	exempt := map[string]bool{"serve": true, "context": true}
+	for name := range registry {
+		if exempt[name] {
+			if usage.Budgets[name] != 0 {
+				t.Errorf("%q is documented as having no latency contract but has a budget", name)
+			}
+			continue
+		}
+		if usage.Budgets[name] <= 0 {
+			t.Errorf("command %q has no p50 budget — huddle stats shows BUDGET: - for it", name)
+		}
+	}
+	// Budgets for things that are not commands would never be shown.
+	for name := range usage.Budgets {
+		if _, ok := registry[name]; !ok && name != "help" && name != "version" {
+			t.Errorf("budget for unknown command %q", name)
+		}
+	}
+}
+
+// startRealisticHistory writes an ordinary repo history: a handful of decisions,
+// questions, actions, learnings and one pending gate, with ~150-character text.
+func startRealisticHistory(t testing.TB, repoName string) {
+	t.Helper()
+	text := "we will keep the event log append-only and fix the renderer instead, " +
+		"because the audit trail must stay byte-for-byte what happened at the time"
+	if len(text) < 140 || len(text) > 170 {
+		t.Fatalf("fixture text is %d chars, wanted ~150", len(text))
+	}
+	counts := map[string]int{"decision": 9, "question": 3, "action": 3, "learning": 3}
+	for typ, n := range counts {
+		for i := 0; i < n; i++ {
+			e := eventlog.Event{Type: typ, By: "muthu", Branch: "main", Text: text, Door: "two-way"}
+			if typ == "learning" {
+				e.Data = map[string]any{"key": fmt.Sprintf("k%d", i)}
+			}
+			if _, err := eventlog.Append(repoName, e); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	if _, err := eventlog.Append(repoName, eventlog.Event{
+		Type: "gate.request", By: "muthu", Branch: "main",
+		Artifact: &eventlog.ArtifactRef{Kind: "spec", Path: "intent/observability-and-budgets/spec.md"},
+		Data:     map[string]any{"gate": "spec", "role": "tech-lead"},
+	}); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// `huddle start --json` is a machine protocol parsed on every session start, so
+// it is held to the same 2 KB ceiling as the text output (ADR 13, 19). An
+// ordinary history — 9 decisions with ~150-character text — used to produce
+// 3,151 bytes.
+func TestStartJSONOutputBudget(t *testing.T) {
+	root := coreEnv(t)
+	startRealisticHistory(t, "proj")
+	out, err := runCore(t, root, "start", "--json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(out) > startBudgetBytes {
+		t.Fatalf("start --json %d bytes > %d:\n%s", len(out), startBudgetBytes, out)
+	}
+	var res StartResult
+	if err := json.Unmarshal([]byte(out), &res); err != nil {
+		t.Fatalf("start --json is not valid JSON: %v\n%s", err, out)
+	}
+	if res.Proto != 1 || res.Version == "" || res.Repo.Name != "proj" || res.Next == "" {
+		t.Fatalf("field contract broken: %+v", res)
+	}
+	if res.DecisionsActive != 9 || res.QuestionsOpen != 3 || res.ActionsOpen != 3 || res.GatesPending != 1 {
+		t.Fatalf("counts must survive truncation: %d decisions, %d questions, %d actions, %d gates",
+			res.DecisionsActive, res.QuestionsOpen, res.ActionsOpen, res.GatesPending)
+	}
+	if len(res.Decisions) == 0 {
+		t.Fatal("no decision survived: a realistic history should still list some")
+	}
+	// itemsElided counts the lines dropped from the lists start would otherwise
+	// have shown (the newest startListLimit per list, startLearnings learnings).
+	want := 0
+	for _, l := range []struct{ shown, total, cap int }{
+		{len(res.Decisions), res.DecisionsActive, startListLimit},
+		{len(res.Questions), res.QuestionsOpen, startListLimit},
+		{len(res.Actions), res.ActionsOpen, startListLimit},
+		{len(res.Learnings), res.LearningsTotal, startLearnings},
+		{len(res.PendingGates), res.GatesPending, res.GatesPending},
+	} {
+		listed := l.total
+		if listed > l.cap {
+			listed = l.cap
+		}
+		want += listed - l.shown
+	}
+	if res.ItemsElided != want || want == 0 {
+		t.Fatalf("itemsElided = %d, want %d", res.ItemsElided, want)
+	}
+	t.Logf("start --json = %d bytes, %d item lines elided", len(out), res.ItemsElided)
+}
+
+// TestStartDispatchP50Budget guards the in-process half of start: everything
+// app.Run does, which is what usage.Entry.MS records and what `huddle stats`
+// compares against usage.Budgets. It is NOT the 60 ms ADR 13/19 budget — that
+// one is user-felt and lives in TestStartEndToEndP50Budget below.
+func TestStartDispatchP50Budget(t *testing.T) {
 	if testing.Short() {
 		t.Skip("timing test skipped under -short")
 	}
@@ -385,8 +544,53 @@ func TestStartP50Budget(t *testing.T) {
 	}
 	sort.Slice(durs, func(i, j int) bool { return durs[i] < durs[j] })
 	p50, p95 := durs[runs/2], durs[runs*95/100]
-	t.Logf("start p50=%v p95=%v", p50, p95)
-	if p50 >= 60*time.Millisecond {
-		t.Fatalf("start p50 %v >= 60ms budget", p50)
+	budget := time.Duration(usage.Budgets["start"]) * time.Millisecond
+	t.Logf("start dispatch p50=%v p95=%v (budget %v)", p50, p95, budget)
+	if p50 >= budget {
+		t.Fatalf("start dispatch p50 %v >= %v budget (usage.Budgets[\"start\"])", p50, budget)
+	}
+}
+
+// TestStartEndToEndP50Budget is the honest reading of the 60 ms budget in ADR
+// 13/19: the wall-clock time a user or agent waits, measured on the real
+// binary, process start included. The in-process measurement it used to be
+// checked against (~0.2 ms against 60 ms) could not fail.
+func TestStartEndToEndP50Budget(t *testing.T) {
+	if testing.Short() {
+		t.Skip("timing test skipped under -short")
+	}
+	goBin, err := exec.LookPath("go")
+	if err != nil {
+		t.Skip("no go toolchain: cannot build the binary to time it")
+	}
+	root := startFixture(t)
+	bin := filepath.Join(t.TempDir(), "huddle")
+	if runtime.GOOS == "windows" {
+		bin += ".exe"
+	}
+	build := exec.Command(goBin, "build", "-o", bin, "./cmd/huddle")
+	build.Dir = filepath.Join("..", "..")
+	build.Env = append(os.Environ(), "GOWORK=off")
+	if out, err := build.CombinedOutput(); err != nil {
+		t.Fatalf("build huddle: %v\n%s", err, out)
+	}
+	const runs = 30
+	durs := make([]time.Duration, 0, runs)
+	for i := 0; i < runs; i++ {
+		cmd := exec.Command(bin, "start")
+		cmd.Dir = root
+		cmd.Env = os.Environ() // coreEnv + TestMain already point every root at a temp dir
+		t0 := time.Now()
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("huddle start: %v\n%s", err, out)
+		}
+		durs = append(durs, time.Since(t0))
+	}
+	sort.Slice(durs, func(i, j int) bool { return durs[i] < durs[j] })
+	p50, p95 := durs[runs/2], durs[runs*95/100]
+	budget := time.Duration(usage.StartEndToEndBudgetMS) * time.Millisecond
+	t.Logf("start end-to-end p50=%v p95=%v (budget %v)", p50, p95, budget)
+	if p50 >= budget {
+		t.Fatalf("start end-to-end p50 %v >= %v budget (ADR 13/19)", p50, budget)
 	}
 }

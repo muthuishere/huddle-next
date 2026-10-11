@@ -17,7 +17,6 @@ import (
 	"github.com/muthuishere/huddle-next/internal/config"
 	"github.com/muthuishere/huddle-next/internal/eventlog"
 	"github.com/muthuishere/huddle-next/internal/install"
-	"github.com/muthuishere/huddle-next/internal/output"
 	"github.com/muthuishere/huddle-next/internal/paths"
 	"github.com/muthuishere/huddle-next/internal/repo"
 	"github.com/muthuishere/huddle-next/internal/version"
@@ -75,33 +74,43 @@ type StartPersonas struct {
 
 // StartResult is the full `huddle start --json` payload.
 type StartResult struct {
-	Proto            int           `json:"HUDDLE_PROTO"`
-	Version          string        `json:"version"`
-	Repo             repo.Info     `json:"repo"`
-	Config           StartConfig   `json:"config"`
-	RepoHooksChanged bool          `json:"repoHooksChanged"`
-	Events           int           `json:"events"`
-	DecisionsActive  int           `json:"decisionsActive"`
-	Decisions        []StartItem   `json:"decisions"`
-	QuestionsOpen    int           `json:"questionsOpen"`
-	Questions        []StartItem   `json:"questions"`
-	ActionsOpen      int           `json:"actionsOpen"`
-	Actions          []StartItem   `json:"actions"`
-	Learnings        []StartItem   `json:"learnings"`
-	PendingGates     []StartGate   `json:"pendingGates"`
-	Personas         StartPersonas `json:"personas"`
-	Drafts           int           `json:"drafts"`
-	MigrationNeeded  bool          `json:"migrationNeeded"`
-	SkillsSynced     []string      `json:"skillsSynced,omitempty"`
-	Memories         string        `json:"memoriesCarried,omitempty"`
-	SkillsBlocked    []string      `json:"skillsBlocked,omitempty"`
-	Subagents        string        `json:"subagents"`
-	Next             string        `json:"next"`
-	Partial          bool          `json:"partial"`
-	Slow             []string      `json:"slowProbes,omitempty"`
-	Errors           []string      `json:"errors,omitempty"`
-	ElapsedMS        float64       `json:"elapsedMs"`
-	repoHooksSeen    int
+	Proto            int         `json:"HUDDLE_PROTO"`
+	Version          string      `json:"version"`
+	Repo             repo.Info   `json:"repo"`
+	Config           StartConfig `json:"config"`
+	RepoHooksChanged bool        `json:"repoHooksChanged"`
+	Events           int         `json:"events"`
+	DecisionsActive  int         `json:"decisionsActive"`
+	Decisions        []StartItem `json:"decisions"`
+	QuestionsOpen    int         `json:"questionsOpen"`
+	Questions        []StartItem `json:"questions"`
+	ActionsOpen      int         `json:"actionsOpen"`
+	Actions          []StartItem `json:"actions"`
+	// LearningsTotal is how many learnings were selected (top startLearnings),
+	// so the count survives any truncation of the list below it.
+	LearningsTotal int         `json:"learningsTotal"`
+	Learnings      []StartItem `json:"learnings"`
+	// GatesPending is the true number of pending gates, which stays correct
+	// even when PendingGates is shortened to hold the output budget.
+	GatesPending    int           `json:"gatesPending"`
+	PendingGates    []StartGate   `json:"pendingGates"`
+	Personas        StartPersonas `json:"personas"`
+	Drafts          int           `json:"drafts"`
+	MigrationNeeded bool          `json:"migrationNeeded"`
+	SkillsSynced    []string      `json:"skillsSynced,omitempty"`
+	Memories        string        `json:"memoriesCarried,omitempty"`
+	SkillsBlocked   []string      `json:"skillsBlocked,omitempty"`
+	Subagents       string        `json:"subagents"`
+	Next            string        `json:"next"`
+	Partial         bool          `json:"partial"`
+	Slow            []string      `json:"slowProbes,omitempty"`
+	Errors          []string      `json:"errors,omitempty"`
+	ElapsedMS       float64       `json:"elapsedMs"`
+	// ItemsElided counts the item lines dropped from the lists to hold the
+	// output budget (ADR 13/19) — the lists are the newest few to begin with.
+	// The *Active/*Open/*Pending counts always report the true totals.
+	ItemsElided   int `json:"itemsElided,omitempty"`
+	repoHooksSeen int
 }
 
 func runStart(c *Ctx, args []string) error {
@@ -118,10 +127,121 @@ func runStart(c *Ctx, args []string) error {
 	}
 	res.SkillsSynced, res.SkillsBlocked, res.Memories = syncSkills(res.Repo.Root)
 	if a.bools["json"] {
-		return output.JSON(c.Stdout, res)
+		b, err := startJSONBytes(res)
+		if err != nil {
+			return err
+		}
+		_, err = c.Stdout.Write(b)
+		return err
 	}
 	_, err = c.Stdout.Write(renderStart(res))
 	return err
+}
+
+// startJSONBytes renders the --json payload within startBudgetBytes. The
+// payload is a machine protocol an agent parses on every session start, so the
+// 2 KB ceiling (ADR 13, 19) is held by giving up, in this order: the
+// indentation, then the length of item text, then the number of items listed —
+// never by widening the ceiling. The untruncated indented payload is tried
+// first, so nothing changes for a repo whose payload already fits. The counts
+// (decisionsActive, gatesPending, …) always report the true totals, and
+// itemsElided says how many item lines were dropped, so an agent can tell that
+// the lists are a sample and reach for `huddle log list` when it needs more.
+func startJSONBytes(r StartResult) ([]byte, error) {
+	fits := func(b []byte, err error) ([]byte, bool, error) {
+		return b, err == nil && len(b) <= startBudgetBytes, err
+	}
+	// 1. exactly today's output, whenever it fits.
+	if b, ok, err := fits(marshalStartJSON(r, false)); err != nil || ok {
+		return b, err
+	}
+	// 2. the whole payload without indentation.
+	if b, ok, err := fits(marshalStartJSON(r, true)); err != nil || ok {
+		return b, err
+	}
+	// 3. shorter item text, then fewer items — the same order of sacrifice as
+	// the text renderer, which keeps a legible line in preference to more lines.
+	for _, width := range []int{100, 72, 48, 32} {
+		for _, maxItems := range []int{startListLimit, 3, 2, 1, 0} {
+			b, ok, err := fits(marshalStartJSON(shrinkStart(r, width, maxItems), true))
+			if err != nil || ok {
+				return b, err
+			}
+		}
+	}
+	// Floor: every field, no item lines. Truncating the bytes themselves would
+	// leave invalid JSON, so an over-budget floor is returned as it is.
+	return marshalStartJSON(shrinkStart(r, 32, 0), true)
+}
+
+func marshalStartJSON(r StartResult, compact bool) ([]byte, error) {
+	if compact {
+		b, err := json.Marshal(r)
+		if err != nil {
+			return nil, err
+		}
+		return append(b, '\n'), nil
+	}
+	b, err := json.MarshalIndent(r, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	return append(b, '\n'), nil
+}
+
+// shrinkStart copies r with item text truncated to width runes (0 = as is) and
+// each item list cut to maxItems entries (-1 = all), counting what it dropped.
+func shrinkStart(r StartResult, width, maxItems int) StartResult {
+	trim := func(s string) string {
+		if width <= 0 {
+			return s
+		}
+		return coreTruncate(s, width)
+	}
+	out := r
+	out.ItemsElided = 0
+	cutItems := func(items []StartItem) []StartItem {
+		kept := items
+		if maxItems >= 0 && len(kept) > maxItems {
+			out.ItemsElided += len(kept) - maxItems
+			kept = kept[:maxItems]
+		}
+		res := make([]StartItem, len(kept))
+		for i, it := range kept {
+			it.Text = trim(it.Text)
+			res[i] = it
+		}
+		return res
+	}
+	out.Decisions = cutItems(r.Decisions)
+	out.Questions = cutItems(r.Questions)
+	out.Actions = cutItems(r.Actions)
+	out.Learnings = cutItems(r.Learnings)
+	gates := r.PendingGates
+	if maxItems >= 0 && len(gates) > maxItems {
+		out.ItemsElided += len(gates) - maxItems
+		gates = gates[:maxItems]
+	}
+	out.PendingGates = make([]StartGate, len(gates))
+	for i, g := range gates {
+		g.Artifact = trim(g.Artifact)
+		out.PendingGates[i] = g
+	}
+	out.Errors = trimEach(r.Errors, trim)
+	out.SkillsBlocked = trimEach(r.SkillsBlocked, trim)
+	out.Memories = trim(r.Memories)
+	return out
+}
+
+func trimEach(in []string, trim func(string) string) []string {
+	if in == nil {
+		return nil
+	}
+	out := make([]string, len(in))
+	for i, s := range in {
+		out[i] = trim(s)
+	}
+	return out
 }
 
 // syncSkills keeps the installed skill family in step with this binary, so that
@@ -343,8 +463,8 @@ func probeEvents(repoName string) (func(*StartResult), error) {
 		r.DecisionsActive, r.Decisions = snap.decisionsN, snap.decisions
 		r.QuestionsOpen, r.Questions = snap.questionsN, snap.questions
 		r.ActionsOpen, r.Actions = snap.actionsN, snap.actions
-		r.Learnings = snap.learnings
-		r.PendingGates = snap.gates
+		r.LearningsTotal, r.Learnings = len(snap.learnings), snap.learnings
+		r.GatesPending, r.PendingGates = len(snap.gates), snap.gates
 	}, nil
 }
 
@@ -624,8 +744,8 @@ func renderStartWith(r StartResult, width, maxItems int) []byte {
 	items("DECISIONS_ACTIVE", r.DecisionsActive, r.Decisions)
 	items("QUESTIONS_OPEN", r.QuestionsOpen, r.Questions)
 	items("ACTIONS_OPEN", r.ActionsOpen, r.Actions)
-	items("LEARNINGS", len(r.Learnings), r.Learnings)
-	kv("GATES_PENDING", fmt.Sprint(len(r.PendingGates)))
+	items("LEARNINGS", r.LearningsTotal, r.Learnings)
+	kv("GATES_PENDING", fmt.Sprint(r.GatesPending))
 	for i, g := range r.PendingGates {
 		if i >= maxItems {
 			break

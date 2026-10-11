@@ -41,7 +41,7 @@ consequences, all observed in the last two weeks of history:
 - `internal/serve` was committed with five handlers registered on the mux but never
   defined, plus an import of a `web` package that did not exist — the tree did not
   compile. No check ran `go build ./...` before "done".
-- Every npm manifest (`npm/package.json` and all five `npm/platforms/*/package.json`)
+- Every npm manifest (`npm/package.json` and all six `npm/platforms/*/package.json`)
   shipped with no `license` field, with the OIDC publish workflow already wired.
 
 ADR 9 makes evals a requirement; ADR 19 is the v1 value gate. Neither was being met by

@@ -1,8 +1,20 @@
+---
+id: adr-8
+kind: adr
+status: proposed
+author: muthuishere
+links: {}
+---
 # ADR 8: Cross-Agent Session Context via crossmem, Imported as a Library
 
-- Status: proposed
 - Date: 2026-09-14
 - v1: built (ADR 19)
+
+## Status
+
+**proposed** — the decision stands; it is only partly implemented. The `v1:` line above and
+**Open questions** name which clauses landed and which did not. The front matter `status:` field
+is the status of record.
 
 ## Decision
 
@@ -60,3 +72,15 @@ into state or memories.
 
 Decide one way or the other: either make `crossmem` a plain dependency and build it into the
 release, or amend §2/§3 to say the CLI is the shipped path and the library is opt-in.
+
+## binds
+
+- Reading what other agents did in a folder is crossmem's job, consumed through its public API.
+- The default build shells out to the `crossmem` CLI; the library is linked only with
+  `-tags crossmem`.
+
+## prevents
+
+- Huddle never grows its own session-file parsers for Claude Code, Codex, Devin, Copilot or
+  OpenCode.
+- crossmem never becomes a hard dependency of the default build or of `huddle start`.

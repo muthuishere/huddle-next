@@ -1,16 +1,37 @@
+---
+id: adr-19
+kind: adr
+status: approved
+author: muthuishere
+links: {}
+---
 # ADR 19: v1 Scope — Build Only What Scores; Everything Else Stays in the ADRs
 
-- Status: accepted — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw decision: README Inputs)
 - Date: 2026-09-14
 - Overrides: scope of ADRs 1–18 for the first release. Deferred items remain valid design, not v1 work.
 
-## Value gate (must hold before release)
+## Status
+
+**approved** — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw
+decision: `README.md` → Inputs). The front matter `status:` field is the status of record.
+
+## Context
+
+ADRs 1-18 accumulated more design than one release can carry, and several of them contradict each
+other (three layers or four, `export` or `<noun> new`, a room mode per situation). Shipping all of
+it would mean shipping none of it well, so scope is decided once, in one place, by a stated measure
+rather than by enthusiasm: `stress-test.md` scores how much of the AI-native SDLC playbook v1-built
+features actually cover, and that score is the gate.
+
+## Decision
+
+### Value gate (must hold before release)
 
 - **Playbook value score ≥ 80 %** = playbook items Covered + Partial by *v1-built* features ÷ playbook items not deliberately out (method: `stress-test.md`).
 - **0 high-severity edges** open from `stress-test.md`.
 - **Performance:** `huddle start` p50 ≤ 60 ms / p95 ≤ 150 ms warm; first persona response ≤ 3 tool calls; `SKILL.md` ≤ 6 KB; `start` output ≤ 2 KB. Enforced by Go tests/benchmarks.
 
-## Build in v1
+### Build in v1
 
 | # | Capability | Commands | From ADR |
 |---|---|---|---|
@@ -34,11 +55,11 @@
 | 18 | Lessons noun (post-mortem → eval + intent links), `docs/lessons/<date>-<slug>.md` | `lessons new\|list\|show` | 16, 18 |
 | 19 | CI drafts, templates only: read-only `claude -p` triage job; intent-merge → spec-draft job | `ci draft triage\|spec` | 12, 16 |
 
-## Deferred — stays in the ADRs only
+### Deferred — stays in the ADRs only
 
 Room modes beyond `session` · anti-consensus roles · pressure-test mode · saved groups · elicitation/brainstorm catalogs · persona `discover`/`propose`/`analyze` · trust hashing (repo personas included; revisit if cloned-repo personas become common) · `huddle watch` · `context-bill` · touchfile eval selection + LLM judge · agent-definition install · `gh` context cache (use hooks) · build dispatch automation (v1: `plan` + task brief only; harness does the build) · release-notes writer · skill drafting subagent · `custom` spec path mapping.
 
-## Resolved contradictions (applies across ADRs)
+### Resolved contradictions (applies across ADRs)
 
 - Startup command is `huddle start`; budget p50 ≤ 60 ms.
 - Event writer is `huddle log append`; `event add` and `export` are removed — artifacts are created with `huddle <noun> new`.
@@ -49,6 +70,17 @@ Room modes beyond `session` · anti-consensus roles · pressure-test mode · sav
 - Deepak's doc flow is replaced by the guardrails writer.
 - The default room is `session`.
 - Spikes, `.huddle/` config, and `AGENTS.md` are marked Huddle conventions beyond the playbook.
+
+## Consequences
+
+- Every other ADR is read through this one: an approved-looking clause may still be out of v1, and
+  the ADR's own `v1:` line says which.
+- The deferred list is a commitment, not a backlog: building one of those items needs an approved
+  amendment here first, which keeps scope from drifting one convenient exception at a time.
+- The value gate makes "ready" checkable by a test run rather than arguable, and it can fail a
+  release that otherwise looks finished.
+- Where an ADR and this one disagree about scope, this one wins — so the ADRs stay honest records of
+  the decision made at the time instead of being rewritten after the fact.
 
 ## Open questions
 
@@ -74,3 +106,15 @@ Three rows need an amendment rather than more code:
 Also unaccounted for by this ADR either way: ADR 14 §11 install hygiene (`.huddle-owned` is built,
 `removals` and `huddle digest` are not) and ADR 13 §C14 served catalogs (not built; belongs with the
 deferred ADR 14 §8).
+
+## binds
+
+- v1 is exactly the "Build in v1" list above, held to the value gate: playbook value score ≥ 80 %,
+  0 high-severity edges, and the stated performance budgets, each enforced by a test.
+- Deferred items stay valid design and stay unbuilt; where ADRs contradict each other, the
+  "Resolved contradictions" section wins.
+
+## prevents
+
+- No deferred item is built without an approved change to this ADR.
+- The value gate is never lowered to let a release through.

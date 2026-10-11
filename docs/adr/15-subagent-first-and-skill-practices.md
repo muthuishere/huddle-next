@@ -1,9 +1,20 @@
+---
+id: adr-15
+kind: adr
+status: approved
+author: muthuishere
+links: {}
+---
 # ADR 15: Subagent-First Execution and Agent-Skill Best Practices
 
-- Status: accepted — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw decision: README Inputs)
 - Date: 2026-09-14
 - v1: built: §A, §C, §D; deferred: §B agent definitions, per-persona subagent views (ADR 19)
 - Builds on: ADR 13 (budgets), ADR 14 §2 (room modes)
+
+## Status
+
+**approved** — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw
+decision: `README.md` → Inputs). The front matter `status:` field is the status of record.
 
 ## Decision
 
@@ -63,3 +74,15 @@
 - Main-context growth per huddle becomes roughly linear in decisions, not in files read.
 - More tokens overall (subagents re-read context), fewer in the expensive long-lived main window; budgets in ADR 13 apply per subagent return.
 - Installing agent definitions writes outside the skill dir; they carry the `.huddle-owned` marker and are removed by `uninstall`.
+
+## binds
+
+- The main conversation holds only what the user must see: persona voices, the question, the
+  recommendation, the user's call.
+- Work that reads many files, gathers data, drafts long artifacts or checks results runs in a
+  subagent and returns a compact result.
+
+## prevents
+
+- No bulk file reading or long tool output in the room's context.
+- No persona voice spent on mechanical work a subagent should have done.

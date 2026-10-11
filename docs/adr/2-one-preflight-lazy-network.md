@@ -1,9 +1,20 @@
+---
+id: adr-2
+kind: adr
+status: approved
+author: muthuishere
+links: {}
+---
 # ADR 2: One `huddle preflight` Call; Network Context Is Lazy and Cached
 
-- Status: accepted — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw decision: README Inputs)
 - Date: 2026-09-14
 - v1: built as `huddle start`; deferred: §3–4 gh cache (use hooks) (ADR 19)
 - Amended by: ADR 14 §10 — the single startup command is `huddle start --json`; `preflight` is its internal step.
+
+## Status
+
+**approved** — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw
+decision: `README.md` → Inputs). The front matter `status:` field is the status of record.
 
 ## Decision
 
@@ -33,3 +44,15 @@
 ## Open questions
 
 - Should `huddle context --gh` also pull CI status for the current branch (`gh run list`)? Same cache, same laziness.
+
+## binds
+
+- Startup is one process and one tool call (`huddle start --json`), computed concurrently inside the
+  binary.
+- Anything remote or slow moves behind an explicit command, caches to disk with a `fetchedAt`, and
+  reports its age so the caller can decide whether to refresh.
+
+## prevents
+
+- Nothing on the start path touches the network — no `gh`, no remote, no model call.
+- No second startup entry point: `preflight` is an internal step, not a command users learn.

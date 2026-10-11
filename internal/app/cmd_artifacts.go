@@ -17,7 +17,9 @@ import (
 var artFire artifacts.FireFunc = hooks.Fire
 
 func init() {
-	for _, name := range []string{"intent", "spec", "plan", "adr", "spike", "guardrails", "review-policy", "skill", "lessons"} {
+	// guardrails and bands have extra verbs and register themselves in their own
+	// cmd_<group>.go files.
+	for _, name := range []string{"intent", "spec", "plan", "adr", "spike", "review-policy", "skill", "lessons"} {
 		name := name
 		k, _ := artifacts.Get(config.Config{}, name)
 		register(Command{Name: name, Summary: k.Summary, Run: func(c *Ctx, args []string) error {
@@ -176,9 +178,6 @@ func artNew(c *Ctx, noun string, args []string) error {
 		return nil
 	}
 	if err := artifacts.Create(env.Repo.Root, d); err != nil {
-		if errors.Is(err, artifacts.ErrExists) && noun == "guardrails" {
-			return fmt.Errorf("%w\nhuddle only edits its own block: add %s … %s to CLAUDE.md by hand, then run: huddle guardrails lint", err, artifacts.GuardrailsBegin, artifacts.GuardrailsEnd)
-		}
 		return err
 	}
 	ev, res, err := artifacts.RecordWrite(env, d.ID, d.Kind, d.Path, d.SHA256, author, "new")

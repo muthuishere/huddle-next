@@ -15,7 +15,13 @@ npm install -g @muthuishere/huddle
 huddle install --skills          # huddle, huddle-sdlc, huddle-personas
 ```
 
-Or build from source: `go install github.com/muthuishere/huddle-next/cmd/huddle@latest`.
+Or `brew install --cask muthuishere/tap/huddle`, `winget install Muthuishere.Huddle`, the `.deb` /
+`.rpm` on the release, or from source: `go install github.com/muthuishere/huddle-next/cmd/huddle@latest`.
+Prebuilt for macOS and Linux on arm64 + x64 and Windows on arm64 + x64; install channels and their
+status are in [`docs/packaging.md`](docs/packaging.md).
+
+Every channel leaves the skills installed — `huddle install --skills` is only needed to force a
+reinstall.
 
 ## Usage
 
@@ -72,3 +78,9 @@ Upgrading from the Python skill: `huddle migrate --dry-run`, then `huddle migrat
 ## Design
 
 Architecture decisions live in [`docs/adr/`](docs/adr/README.md). v1 scope: [`19-v1-scope-and-value-gate.md`](docs/adr/19-v1-scope-and-value-gate.md).
+An ADR's status is one of `draft | proposed | approved | superseded` — the same vocabulary every
+huddle artifact uses, and the one a gate writes.
+
+Changes per release: [`CHANGELOG.md`](CHANGELOG.md). Reporting a vulnerability:
+[`SECURITY.md`](SECURITY.md). Licence: MIT ([`LICENSE`](LICENSE),
+[`THIRD-PARTY-LICENSES.md`](THIRD-PARTY-LICENSES.md)).

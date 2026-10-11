@@ -1,0 +1,22 @@
+{
+  "name": "@muthuishere/huddle-windows-arm64",
+  "version": "0.1.0",
+  "description": "huddle prebuilt binary for windows-arm64",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/muthuishere/huddle-next.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "files": [
+    "bin/"
+  ]
+}

@@ -44,8 +44,9 @@ Deepak (docs clarity) + Shaama (are these the real commands?). Then STOP.
 ## Gate
 
 1. Show the guardrails diff in full.
-2. On the user's yes: `huddle guardrails new --from <draft>` (no CLAUDE.md yet), or edit only
-   the `<!-- huddle:context -->` block by hand.
+2. On the user's yes: `huddle guardrails new --from <draft>` (no CLAUDE.md yet), else
+   `huddle guardrails adopt --from <draft>` (inserts only huddle's `<!-- huddle:context -->`
+   block; everything outside it is kept byte for byte).
 3. `huddle gate request <guardrails-id>` (from `huddle guardrails status --json`) — the user
    (or owner) approves in their terminal. Suggest the commit.
 

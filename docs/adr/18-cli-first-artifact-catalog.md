@@ -1,9 +1,21 @@
+---
+id: adr-18
+kind: adr
+status: proposed
+author: muthuishere
+links: {}
+---
 # ADR 18: CLI-First and Human-Visible — Every Artifact Is a CLI Noun (Intent, Spec, Plan, ADR, Spike, Guardrails, Hooks, …)
 
-- Status: proposed
 - Date: 2026-09-14
 - v1: built; deferred: `huddle watch`, groups (ADR 19)
 - Builds on: ADR 12 (writers), 16 (orchestrator), 17 (hooks)
+
+## Status
+
+**proposed** — the decision stands; it is only partly implemented. The `v1:` line above and
+**Open questions** name which clauses landed and which did not. The front matter `status:` field
+is the status of record.
 
 ## Decision
 
@@ -91,11 +103,36 @@ separation of duties and agent-session rejection (`internal/gates/gates.go:145` 
   are parsed but the chain is never printed as a tree.
 - §A7 `huddle watch` — deferred by ADR 19 (expected).
 
-**Contradiction between §B8's lint and this folder's own format.** `huddle adr lint` requires YAML
-front matter (`id`, `kind`, `status`, `author`) and `## Status`, `## binds`, `## prevents` headings
+**Resolved 2026-10-11 — the lint is the authority, the folder was wrong.** `huddle adr lint`
+requires YAML front matter (`id`, `kind`, `status`, `author`) and `## Status`, `## binds`,
+`## prevents` headings (`internal/artifacts/kinds.go:48-50`, `internal/artifacts/lint.go:131-164`);
+all 20 ADRs in this folder reported 4 findings each, and the fix was to the ADRs. They now carry
+front matter plus those sections; `huddle adr lint` is clean. The status vocabulary is the CLI's
+`draft|proposed|approved|superseded` (`internal/artifacts/store.go:42`) and not `accepted`, because
+`approved` is load-bearing in code — `internal/gates/gates.go:347` writes `status: approved` into an
+artifact's front matter when a human approves its gate, `internal/sdlc/sdlc.go:254` will not advance
+a stage until it reads `approved`, the deploy-gate hook matches on it
+(`internal/hooks/export.go:327`) and `huddle serve` publishes the list
+(`internal/serve/api.go:120`). `accepted` appears nowhere in `internal/`. An ADR folder spelling it
+`accepted` would be overwritten by the next gate approval and would never register as done in
+`huddle sdlc status`; one vocabulary across eleven artifact kinds beats matching ADR literature.
+
+## binds`, `## prevents` headings
 (`internal/artifacts/kinds.go:48-50`, `internal/artifacts/lint.go:131-164`), while
 `docs/adr/README.md` prescribes a `- Status:` bullet and Decision → Context → Details → Consequences
 → Open questions. All 20 ADRs in this folder therefore fail `huddle adr lint` — 80 findings, every
 one of them about the format the folder's own README mandates. Separately, the lint's status
 vocabulary is `draft|proposed|approved|superseded` (`internal/artifacts/store.go:42`) while the
 README and ADR 7 §3 / ADR 14 §7 all say `accepted`. Pick one vocabulary and one ADR shape.
+
+## binds
+
+- Every artifact is a CLI noun with the same verbs (`new|list|show|status|lint`), usable by a human
+  with no agent in the room.
+- The skill is a driver of those same commands, and every flag it names exists in the registry.
+
+## prevents
+
+- No hidden second path that only agents can take.
+- No artifact that only the skill knows how to write, and no output a person cannot inspect from a
+  terminal.

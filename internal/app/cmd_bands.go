@@ -28,6 +28,9 @@ const bandsHelp = `Usage: huddle bands <verb> [options]
           a breach drafts intent/<metric>-breach-<date>/intent.md (dry run unless --write)
   dismiss <event-id> --reason "why"      dismiss a logged band signal (reason required)
   new | list | show | status | lint      the bands.yaml artifact
+
+bands.yaml is one per repo (ADR 12 §5) and configures one metric. A second
+metric keeps its own file, which check reads with --config.
 `
 
 func runBands(c *Ctx, args []string) error {
@@ -41,7 +44,29 @@ func runBands(c *Ctx, args []string) error {
 	case "dismiss":
 		return bandsDismiss(c, args[1:])
 	}
-	return artRunNoun(c, "bands", args)
+	err := artRunNoun(c, "bands", args)
+	if args[0] == "new" && errors.Is(err, artifacts.ErrExists) {
+		return bandsExistsHint(c)
+	}
+	return err
+}
+
+// bandsExistsHint explains the singleton. One bands.yaml per repo is the
+// design (ADR 12 §5, ADR 18): it configures one metric, and a second metric
+// lives in its own file that `check --config` reads. Only the message was
+// wrong — it told the user to edit the file by hand without saying that.
+func bandsExistsHint(c *Ctx) error {
+	rel := "bands.yaml"
+	if env, err := artEnv(c); err == nil {
+		if k, ok := artifacts.Get(env.Cfg, "bands"); ok {
+			rel = k.Pattern
+		}
+	}
+	return fmt.Errorf("%w: %s — one %s per repo (ADR 12 §5), configuring one metric.\n"+
+		"  change this metric:   huddle bands show bands, then edit %s\n"+
+		"  watch another metric: copy it to its own file and pass that file to check:\n"+
+		"                        huddle bands check --series <csv> --config <path/to/metric.yaml>",
+		artifacts.ErrExists, rel, rel, rel)
 }
 
 func bandsCheck(c *Ctx, args []string) error {

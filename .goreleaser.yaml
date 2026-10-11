@@ -19,9 +19,11 @@ builds:
     goarch:
       - amd64
       - arm64
-    ignore:
-      - goos: windows
-        goarch: arm64
+    # No ignore list: all six os/arch pairs are built, windows/arm64 included.
+    # npm's `os` x `cpu` fields are a cross product, so a package that claims
+    # win32 and arm64 is installable on win32-arm64 whatever we intend — the
+    # only honest way to stop handing that user a broken install is to ship the
+    # binary. CGO is off, so the target costs nothing but a build.
     hooks:
       post:
         - sh -c 'mkdir -p npm/platforms/{{ .Os }}-{{ if eq .Arch "amd64" }}x64{{ else }}{{ .Arch }}{{ end }}/bin'

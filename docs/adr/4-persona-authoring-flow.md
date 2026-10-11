@@ -1,8 +1,20 @@
+---
+id: adr-4
+kind: adr
+status: proposed
+author: muthuishere
+links: {}
+---
 # ADR 4: `huddle persona new` — Persona Creation Is a First-Class Flow
 
-- Status: proposed
 - Date: 2026-09-14
 - v1: built (ADR 19)
+
+## Status
+
+**proposed** — the decision stands; it is only partly implemented. The `v1:` line above and
+**Open questions** name which clauses landed and which did not. The front matter `status:` field
+is the status of record.
 
 ## Decision
 
@@ -74,3 +86,15 @@ format and its lint (`internal/personas/lint.go`, `internal/personas/personas_te
 - §5 `huddle persona remember <id>` — no such verb; `memories/*.md` can only be written by hand
   (`internal/app/cmd_persona.go:30-38` lists every verb; no `remember` anywhere in `internal/`).
 - §6 `huddle persona new <id> --scope repo --fork` — no `fork` flag or code path in `internal/`.
+
+## binds
+
+- Persona authoring has two halves that never blur: the skill interviews and drafts, the CLI
+  validates and writes.
+- Every write is shown in full and confirmed by a human; `huddle persona lint` can check any file
+  the flow produced.
+
+## prevents
+
+- The skill never writes a persona file itself, and never passes `--yes` on its own behalf —
+  `--yes` exists for a user's own scripting.

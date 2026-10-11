@@ -1,9 +1,20 @@
+---
+id: adr-12
+kind: adr
+status: approved
+author: muthuishere
+links: {}
+---
 # ADR 12: Writer Roles on the AI-Native SDLC Playbook Layout — No Spec Framework Dependency
 
-- Status: accepted — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw decision: README Inputs)
 - Date: 2026-09-14
 - v1: built; deferred: `custom` mapping, release-notes writer (ADR 19)
 - Amends: ADR 7 (artifact formats and locations)
+
+## Status
+
+**approved** — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw
+decision: `README.md` → Inputs). The front matter `status:` field is the status of record.
 
 ## Decision
 
@@ -62,3 +73,15 @@
 
 - One layout to template, lint, and eval; zero third-party CLI dependencies.
 - Teams on another spec framework still work via `custom` mapping, without Huddle understanding that framework's lifecycle.
+
+## binds
+
+- Artifacts use the AI-native SDLC playbook's own files and headings; `native` is the only format
+  huddle implements.
+- A repo that lives elsewhere remaps paths through `artifacts.*` in `config.json`, nothing more.
+
+## prevents
+
+- No adapter for, dependency on, or validation against any spec framework (OpenSpec, spec-kit,
+  BMAD).
+- No framework detection and no third-party `init`: huddle never bootstraps another tool's layout.

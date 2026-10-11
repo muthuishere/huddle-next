@@ -42,6 +42,7 @@
     "@muthuishere/huddle-darwin-x64": "0.1.0",
     "@muthuishere/huddle-linux-arm64": "0.1.0",
     "@muthuishere/huddle-linux-x64": "0.1.0",
+    "@muthuishere/huddle-windows-arm64": "0.1.0",
     "@muthuishere/huddle-windows-x64": "0.1.0"
   },
   "os": [

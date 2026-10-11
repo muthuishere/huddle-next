@@ -147,33 +147,46 @@ func Uninstall(fsys fs.FS, targets []Target) ([]Result, error) {
 		for _, name := range names {
 			dst := filepath.Join(t.Dir, name)
 			r := Result{Host: t.Host, Skill: name, Path: dst}
-			st, err := os.Lstat(dst)
-			switch {
-			case errors.Is(err, os.ErrNotExist):
-				r.Action = "not-installed"
-			case err != nil:
+			action, note, err := uninstallVerdict(dst, name)
+			if err != nil {
 				return results, err
-			case st.Mode()&os.ModeSymlink != 0:
-				if name == LegacyName && isLegacyRepoLink(dst) {
-					if err := os.Remove(dst); err != nil {
-						return results, err
-					}
-					r.Action, r.Note = "pruned-legacy", "removed old install.sh symlink to "+linkTarget(dst)
-				} else {
-					r.Action, r.Note = "skipped", "symlink not created by huddle"
+			}
+			switch action {
+			case "pruned-legacy":
+				if err := os.Remove(dst); err != nil {
+					return results, err
 				}
-			case Owned(dst):
+			case "removed":
 				if err := os.RemoveAll(dst); err != nil {
 					return results, err
 				}
-				r.Action = "removed"
-			default:
-				r.Action, r.Note = "skipped", "no "+Marker+" marker — not removed"
 			}
+			r.Action, r.Note = action, note
 			results = append(results, r)
 		}
 	}
 	return results, nil
+}
+
+// uninstallVerdict decides what Uninstall does about one destination without
+// touching it: removed, pruned-legacy, not-installed, or skipped. Uninstall and
+// `--dry-run` share this one decision.
+func uninstallVerdict(dst, name string) (action, note string, err error) {
+	st, lerr := os.Lstat(dst)
+	switch {
+	case errors.Is(lerr, os.ErrNotExist):
+		return "not-installed", "", nil
+	case lerr != nil:
+		return "", "", lerr
+	case st.Mode()&os.ModeSymlink != 0:
+		if name == LegacyName && isLegacyRepoLink(dst) {
+			return "pruned-legacy", "old install.sh symlink to " + linkTarget(dst), nil
+		}
+		return "skipped", "symlink not created by huddle", nil
+	case Owned(dst):
+		return "removed", "", nil
+	}
+	return "skipped", "no " + Marker + " marker — not removed", nil
 }
 
 // Owned reports whether dir carries the huddle marker.

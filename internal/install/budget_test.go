@@ -20,7 +20,7 @@ const (
 
 // requiredLazy lists the lazy files each skill must ship (ADR 15 §D, ADR 16).
 var requiredLazy = map[string][]string{
-	"huddle":          {"modes/discussion.md", "modes/research.md", "modes/verification.md", "modes/wrap-up.md"},
+	"huddle":          {"modes/discussion.md", "modes/research.md", "modes/verification.md", "modes/wrap-up.md", "modes/autonomous.md"},
 	"huddle-sdlc":     {"stages/setup.md", "stages/plan.md", "stages/design.md", "stages/build.md", "stages/test.md", "stages/deploy.md", "stages/maintain.md"},
 	"huddle-personas": {"flows/create.md", "flows/import-ingest.md", "flows/style-brief.md"},
 }

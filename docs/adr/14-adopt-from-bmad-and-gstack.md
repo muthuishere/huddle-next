@@ -1,11 +1,25 @@
+---
+id: adr-14
+kind: adr
+status: proposed
+author: muthuishere
+links: {}
+---
 # ADR 14: What Huddle Adopts from BMAD-METHOD and gstack
 
-- Status: proposed
 - Date: 2026-09-14
 - v1: built: §1, §6, §7, §10; deferred: §2 non-`session` rooms, §3, §4, §5, §8, §9 learnings, §12 touchfiles (ADR 19)
 - Amends: ADR 3 (merge), ADR 6 (event log), ADR 9 (evals), ADR 12 (writers)
 
-Sources: BMAD-METHOD `6.13.0-next` (`~/Downloads/BMAD-METHOD-main`), gstack `1.84.1.0` (`~/Downloads/gstack-main`). Only adopt/adapt items are listed; everything else is explicitly out (end of file).
+Sources: **BMAD-METHOD `6.13.0-next`** and **gstack `1.84.1.0`**, read from each project's own
+source tree at that version. Every path quoted below is relative to the project it names, not to
+this repo. Only adopt/adapt items are listed; everything else is explicitly out (end of file).
+
+## Status
+
+**proposed** — the decision stands; it is only partly implemented. The `v1:` line above and
+**Open questions** name which clauses landed and which did not. The front matter `status:` field
+is the status of record.
 
 ## Decision
 
@@ -48,7 +62,7 @@ Per-persona optional `model:` and `capabilities:` front-matter fields are honour
 ### 7. Writers get stronger shapes (amends ADR 12)
 
 - **Spec writer:** format is the playbook layout (ADR 12); add a deterministic "spec law" lint over `spec.md` (why present, capabilities have success signals, non-goals listed, no orphan scenarios) and a token target (900–1600 per change) (BMAD spec kernel).
-- **ADR writer:** front matter adds `binds:` and `prevents:`; accepted parent ADRs are inherited invariants shown read-only to later huddles (BMAD architecture spine).
+- **ADR writer:** front matter adds `binds:` and `prevents:`; approved parent ADRs are inherited invariants shown read-only to later huddles (BMAD architecture spine).
 - **Guardrails writer:** SHA/date-stamped managed block between `<!-- huddle:context -->` markers; refresh produces a ledger per existing line — `retain | rewrite | relocate | automate | delete` — and never silently deletes human lines; prohibitions must name the alternative (BMAD project-context).
 
 ### 8. Divergence and elicitation catalogs (deferred)
@@ -131,3 +145,20 @@ stage/mode files.
 **Contradiction to resolve:** ADR 19 defers "§9 learnings", but typed learnings with
 latest-per-key and injection at start are built (`internal/app/cmd_log.go:35`,
 `internal/app/cmd_start.go:333-359`) and so is `huddle timeline`. ADR 19's deferral line is stale.
+
+## binds
+
+- The event log is append-only, typed, and never re-read mid-session; active decisions are computed
+  from it, and committed artifacts stay the source of truth.
+- Every question and decision carries `door: one-way|two-way`, and a one-way door is always handed to
+  the user.
+- Verification answers `PASS | CONCERNS | FAIL` with reasons, stamped with a tree fingerprint that
+  marks the result stale when the tree moves.
+- The ADR writer carries `binds:` and `prevents:` — this very section exists because of §7.
+
+## prevents
+
+- Nothing on the "Explicitly not adopted" list enters huddle: no menu codes, keepsake HTML, web
+  bundles, sprint/epic/story modules, template-engine step files, persistent daemons, browser or
+  deploy skill families, remote telemetry, or model-specific prompt overlays.
+- No auto-decided one-way door, and no consensus reached by the room agreeing with itself.

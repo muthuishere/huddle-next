@@ -16,8 +16,8 @@ func init() {
 
 const installHelp = `
 Usage:
-  huddle install --skills [--agents] [--force] [--json]
-  huddle uninstall --skills [--agents] [--json]
+  huddle install --skills [--agents] [--force] [--dry-run] [--json]
+  huddle uninstall --skills [--agents] [--dry-run] [--json]
 
 Installs the embedded skills (huddle, huddle-sdlc, huddle-personas) into
 Claude's skills root -- $CLAUDE_SKILLS_DIR, else $CLAUDE_CONFIG_DIR/skills,
@@ -29,6 +29,9 @@ repo checkout is replaced and reported.
 
 uninstall removes only dirs with the marker (plus that legacy symlink).
 Huddle state under ~/.config/.huddle is never touched.
+
+--dry-run writes nothing and reports the action each destination would get:
+installed, updated, pruned-legacy, not-installed or skipped.
 `
 
 func runInstall(c *Ctx, args []string) error {
@@ -40,7 +43,7 @@ func runUninstall(c *Ctx, args []string) error {
 }
 
 func installCmd(c *Ctx, verb string, args []string) error {
-	bools := []string{"skills", "agents", "json"}
+	bools := []string{"skills", "agents", "json", "dry-run"}
 	if verb == "install" {
 		bools = append(bools, "force")
 	}
@@ -59,13 +62,19 @@ func installCmd(c *Ctx, verb string, args []string) error {
 		return err
 	}
 	var res []install.Result
-	if verb == "install" {
+	dry := a.bools["dry-run"]
+	switch {
+	case verb == "install" && dry:
+		res, err = install.Plan(install.Skills(), targets, install.Options{Force: a.bools["force"]})
+	case verb == "install":
 		res, err = install.Install(install.Skills(), targets, install.Options{Force: a.bools["force"]})
-	} else {
+	case dry:
+		res, err = install.PlanUninstall(install.Skills(), targets)
+	default:
 		res, err = install.Uninstall(install.Skills(), targets)
 	}
 	if a.bools["json"] {
-		if jerr := output.JSON(c.Stdout, map[string]any{"results": res}); jerr != nil {
+		if jerr := output.JSON(c.Stdout, map[string]any{"dryRun": dry, "results": res}); jerr != nil {
 			return jerr
 		}
 		return err
@@ -74,10 +83,13 @@ func installCmd(c *Ctx, verb string, args []string) error {
 	for _, r := range res {
 		rows = append(rows, []string{r.Host, r.Skill, r.Action, r.Path, r.Note})
 	}
+	if dry {
+		fmt.Fprintf(c.Stdout, "DRY RUN: nothing written — rerun without --dry-run to %s.\n", verb)
+	}
 	if len(rows) > 0 {
 		output.Table(c.Stdout, []string{"HOST", "SKILL", "ACTION", "PATH", "NOTE"}, rows)
 	}
-	if err == nil && verb == "install" {
+	if err == nil && verb == "install" && !dry {
 		fmt.Fprintln(c.Stdout, "Restart your agent session to load the skills. Check with: huddle doctor")
 	}
 	return err

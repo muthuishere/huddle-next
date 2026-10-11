@@ -1,9 +1,21 @@
+---
+id: adr-7
+kind: adr
+status: proposed
+author: muthuishere
+links: {}
+---
 # ADR 7: Huddle Outputs Join the Committed SDLC Artifact Chain
 
-- Status: proposed
 - Date: 2026-09-14
 - v1: built via `<noun> new` (no `export`) (ADR 19)
 - Amended by: ADR 12 — intent/spec/plan paths follow the playbook (`intent/<slug>/{intent,spec,plan}.md`) or a `custom` mapping. The `docs/intent|specs|plans` paths below are superseded. ADR export is unchanged.
+
+## Status
+
+**proposed** — the decision stands; it is only partly implemented. The `v1:` line above and
+**Open questions** name which clauses landed and which did not. The front matter `status:` field
+is the status of record.
 
 ## Decision
 
@@ -14,7 +26,7 @@
    | discussion / research on a problem | Plan | `intent.md` | `docs/intent/<slug>.md` |
    | spec-review / "get me a spec" | Design | `spec.md` | `docs/specs/<slug>.md` |
    | planning | Build (plan mode) | `plan.md` | `docs/plans/<slug>.md` |
-   | any accepted decision | cross-cutting | ADR | `docs/adr/<n>-<slug>.md` |
+   | any approved decision | cross-cutting | ADR | `docs/adr/<n>-<slug>.md` |
    | verification | Test / Deploy review | `verify` record against spec + plan (ADR 19) | log + `huddle verify status` |
 
 2. **Private working state stays private.** `~/.config/.../huddle-state.json`, raw events, and daily notes remain outside the repo (ADR 6). Export is a deliberate step: `huddle <noun> new --from-event <id>` (ADR 18), shown for review, written only on confirm. Huddle never commits.
@@ -60,3 +72,15 @@ tree, not against this ADR's own claims.
 - §4's two-way traceability is half-wired: the event records the artifact path and hash
   (`internal/artifacts/record.go:38`), but nothing writes the event id into the artifact footer, and
   no commit SHA is ever recorded.
+
+## binds
+
+- Every huddle output that matters lands as a **committed** artifact at a playbook path, created
+  through `huddle <noun> new`.
+- Status, author and links are read from the committed file; `huddle-state.json` is a rebuildable
+  cache of it.
+
+## prevents
+
+- No artifact that exists only in session state or only in a chat transcript.
+- Nothing regenerates over a human edit: drift is reported, never overwritten.

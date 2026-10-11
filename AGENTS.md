@@ -12,4 +12,4 @@ Authoritative guardrails for any agent working in this repo. `CLAUDE.md` points 
 - Stdlib only. The crossmem library is linked only with `-tags crossmem`; the default build shells out to the `crossmem` CLI.
 - Skills install globally only; never commit `.claude/` or `.agents/`.
 - Never publish from a laptop. Releases go through the tag-triggered workflow with npm OIDC trusted publishing.
-- Scope for v1 is `docs/adr/19-v1-scope-and-value-gate.md`. Deferred items stay in the ADRs; don't build them without an accepted ADR change.
+- Scope for v1 is `docs/adr/19-v1-scope-and-value-gate.md`. Deferred items stay in the ADRs; don't build them without an approved ADR change.

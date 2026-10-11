@@ -1,9 +1,20 @@
+---
+id: adr-20
+kind: adr
+status: approved
+author: muthuishere
+links: {}
+---
 # ADR 20: `huddle serve` — Local Dashboard on :16211 and Local-Only Usage Analytics
 
-- Status: accepted — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw decision: README Inputs)
 - Date: 2026-09-14
 - v1: built
 - Amends: ADR 18 §7 ("no web dashboard in core"), ADR 11 §2 (usage lines)
+
+## Status
+
+**approved** — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw
+decision: `README.md` → Inputs). The front matter `status:` field is the status of record.
 
 ## Decision
 
@@ -38,3 +49,15 @@
 
 - Adds `internal/usage`, `internal/serve`, `web/` (embedded), `cmd_serve.go`, `cmd_stats.go`.
 - The usage file is personal data on the user's machine; `huddle stats --json` is the export, nothing is sent.
+
+## binds
+
+- The dashboard binds loopback only, ships embedded in the binary, and reads the same packages the
+  CLI uses — one source of truth for both surfaces.
+- Usage analytics stay on the machine that produced them.
+
+## prevents
+
+- Never binds `0.0.0.0`; no CDN, no build step, no network needed to render it.
+- No gate is approved from the dashboard — approval stays a terminal act by a human.
+- No usage data leaves the machine.

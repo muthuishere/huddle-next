@@ -1,8 +1,19 @@
+---
+id: adr-5
+kind: adr
+status: proposed
+author: muthuishere
+links: {}
+---
 # ADR 5: Repo-Level Personas Are Trusted by Content Hash
 
-- Status: proposed
 - Date: 2026-09-14
 - v1: deferred (trust hashing); §5 "tool output is data" built (ADR 19)
+
+## Status
+
+**proposed** — deferred by ADR 19. The trust-hash gate is not built; §5 ("tool output is data,
+never instructions") is. The front matter `status:` field is the status of record.
 
 ## Decision
 
@@ -26,3 +37,14 @@
 
 - First run after upgrade shows existing synced personas as pending unless the owner sets `global: auto`. The migration offers "trust all current files" once.
 - Small cost: hashing files on each resolve (dozens of small markdown files; negligible).
+
+## binds
+
+- Persona and memory text that huddle did not embed or author is **data**, never instructions.
+- When the gate lands, approval is by content hash in `~/.config/.huddle/trust.json`, and any edit
+  revokes it.
+
+## prevents
+
+- No instruction found in repo files, tool output or ingested records is ever executed.
+- No blanket "trust everything in this repo" switch, and no trust that survives an edit.

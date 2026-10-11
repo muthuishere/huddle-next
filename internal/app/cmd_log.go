@@ -225,7 +225,7 @@ func logList(c *Ctx, args []string) error {
 	}
 	rows := make([][]string, 0, len(events))
 	for _, e := range events {
-		rows = append(rows, []string{e.TS.Local().Format("2006-01-02 15:04"), e.Type, e.By, e.ID, coreTruncate(e.Text, 80)})
+		rows = append(rows, []string{e.TS.Local().Format("2006-01-02 15:04"), e.Type, e.By, e.ID, coreTruncate(e.Summary(), 80)})
 	}
 	output.Table(c.Stdout, []string{"TIME", "TYPE", "BY", "ID", "TEXT"}, rows)
 	return nil
@@ -281,7 +281,7 @@ func runTimeline(c *Ctx, args []string) error {
 		if e.By != "" {
 			by = " " + e.By + ":"
 		}
-		fmt.Fprintf(&b, "  %s  %-10s%s %s%s\n", ts.Format("15:04"), e.Type, by, coreTruncate(e.Text, 100), extra)
+		fmt.Fprintf(&b, "  %s  %-10s%s %s%s\n", ts.Format("15:04"), e.Type, by, coreTruncate(e.Summary(), 100), extra)
 	}
 	_, err = io.WriteString(c.Stdout, b.String())
 	return err

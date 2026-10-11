@@ -62,8 +62,70 @@ const MaxBytes = 10 << 20
 // EnvOptOut disables recording when set to 1/true.
 const EnvOptOut = "HUDDLE_NO_USAGE"
 
-// Budgets are the p50 latency budgets (ms) enforced elsewhere by benchmarks.
-var Budgets = map[string]float64{"start": 60}
+// StartEndToEndBudgetMS is the user-felt `huddle start` budget from ADR 13/19:
+// the wall-clock time from the shell exec to the last byte of output, process
+// start included. It is enforced against the real binary by
+// TestStartEndToEndP50Budget, not by the numbers in this file.
+const StartEndToEndBudgetMS = 60
+
+// Budgets are the p50 budgets (ms) `huddle stats` compares each command
+// against. They are in-process DISPATCH budgets: Entry.MS is measured inside
+// app.Run, so it excludes process start, dynamic loading and runtime init
+// (~4.8 ms end to end, ~5 ms of which is outside app.Run on an M-series Mac).
+// Comparing a dispatch measurement with the 60 ms end-to-end budget was the
+// defect: every command passed trivially. The end-to-end contract lives in
+// StartEndToEndBudgetMS above; these are the like-for-like numbers.
+//
+// Derivation (2026-10-11, 261 recorded invocations in ~/.config/.huddle):
+// per-command p95 of the real local log, multiplied by 10 to cover a cold
+// cache, slower CI hardware and a larger repo, then rounded up to the next
+// tier in {10, 25, 60, 150, 2500}. Commands with no non-help sample of their
+// own take the tier of the measured command in the same class (a gate
+// decision writes an artifact and fires hooks, so it sits with `intent`;
+// `uninstall` walks a skill tree, so it sits with `install`).
+// Two commands deliberately have no budget: `serve` is long-running and
+// records only its start, and `context` shells out to another CLI, so its
+// latency is not huddle's to promise.
+var Budgets = map[string]float64{
+	// parse-and-print, or one small file read (measured p95 ≤ 1 ms)
+	"help":       10,
+	"version":    10,
+	"config":     10,
+	"hooks":      10,
+	"timeline":   10,
+	"log":        10,
+	"bands":      10,
+	"guardrails": 10,
+	"spike":      10,
+	// read the event log or the artifact tree (measured p95 1–1.6 ms)
+	"start":         25,
+	"stats":         25,
+	"eval":          25,
+	"spec":          25,
+	"plan":          25,
+	"review-policy": 25,
+	"skill":         25,
+	"lessons":       25,
+	"ci":            25,
+	// scan several trees, resolve persona layers, or write an artifact and
+	// fire hooks (measured p95 2.7–3.4 ms)
+	"intent":  60,
+	"adr":     60,
+	"sdlc":    60,
+	"persona": 60,
+	"doctor":  60,
+	"gate":    60,
+	"verify":  60,
+	// `autonomous` arrived with no recorded invocations of its own; it reads
+	// the event log and writes a session file per turn, so it is classed with
+	// the artifact writers above until there is data for it.
+	"autonomous": 60,
+	// walk and write the installed skill trees (measured p95 9 ms)
+	"install":   150,
+	"uninstall": 150,
+	// one-time copy of the whole legacy state tree (measured p95 230 ms)
+	"migrate": 2500,
+}
 
 // Disabled reports whether recording is off: HUDDLE_NO_USAGE, else a `usage`
 // key set to false in the repo config (when repoRoot is known) or the global

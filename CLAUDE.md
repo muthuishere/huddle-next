@@ -39,7 +39,7 @@ Linking the crossmem library locally: keep a gitignored `go.work` with `use (. .
 
 ## Distribution
 
-GoReleaser builds darwin/linux amd64+arm64 and windows amd64, copies binaries into `npm/platforms/*/bin/`, and the `v*` tag workflow publishes `@muthuishere/huddle-<os>-<arch>` then `@muthuishere/huddle` with npm OIDC provenance. Bump versions with `scripts/npm-set-version.sh`.
+GoReleaser builds darwin/linux/windows amd64+arm64, copies binaries into `npm/platforms/*/bin/`, and the `v*` tag workflow publishes `@muthuishere/huddle-<os>-<arch>` then `@muthuishere/huddle` with npm OIDC provenance. Bump versions with `scripts/npm-set-version.sh`.
 
 ## Decisions
 
@@ -70,12 +70,14 @@ Verified to exist in this repo (`Taskfile.yml`, `./bin/huddle --help`):
   place user text is sanitised. Do not reimplement either at a call site.
 - A new command group registers itself from `init()` in `internal/app/cmd_<group>.go`.
 - Artifact writers never overwrite (`artifacts.ErrExists`) and never touch another tool's
-  managed block. Every write path supports `--dry-run`.
+  managed block. Write paths support `--dry-run`, or are dry by default with `--write`
+  (`ci draft`, `hooks export`, `eval ci-draft`, `bands check`). `config set`, `supersede`
+  and `link` have neither yet; `gate` and `log` have none by design — the record is the act.
 - The committed artifact is the source of truth; `huddle-state.json` is a rebuildable cache.
 - Tests set `HUDDLE_HOME`, `CLAUDE_SKILLS_DIR`, `AGENTS_SKILLS_DIR` to `t.TempDir()`.
   Never run `install --skills` or `migrate` against the real `~/.claude` while developing.
 - Every `huddle <cmd> --flag` written in `skills/**` must exist in the registry — a test checks it.
-- v1 scope is `docs/adr/19-v1-scope-and-value-gate.md`; deferred items need an accepted ADR change.
+- v1 scope is `docs/adr/19-v1-scope-and-value-gate.md`; deferred items need an approved ADR change.
 
 ### Architecture
 

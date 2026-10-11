@@ -5,7 +5,7 @@ truth; `.github/workflows/npm-publish.yml` runs it.
 
 | Channel | Artifact | Needs | Status |
 |---|---|---|---|
-| npm | `@muthuishere/huddle` + 5 platform packages | npm trusted publisher, per package | **not bootstrapped** |
+| npm | `@muthuishere/huddle` + 6 platform packages | npm trusted publisher, per package | **not bootstrapped** |
 | Homebrew | cask in `muthuishere/homebrew-tap` | `HOMEBREW_TAP_GITHUB_TOKEN` | ready, token not set |
 | apt / dnf | `.deb` + `.rpm` on the GitHub Release | nothing | **ready** |
 | winget | PR to `microsoft/winget-pkgs` | `WINGET_GITHUB_TOKEN`, a fork, public repo | ready, token not set |
@@ -30,6 +30,17 @@ Every optional channel is guarded by `skip_upload`, so a missing token writes
 the artifact to `dist/` and skips the push rather than failing the release.
 That is what makes `goreleaser release --snapshot --clean --skip=publish`
 runnable on a laptop.
+
+**Six build targets, not five.** darwin and linux on `amd64` + `arm64`, windows on
+`amd64` + `arm64`. windows/arm64 is built because npm's `os` x `cpu` fields are a
+cross product: a launcher that claims `win32` and `arm64` is installable on
+`win32-arm64` no matter what we intend, so the only honest choice is to ship a
+binary that runs there. `CGO_ENABLED=0` means the target costs one build.
+
+Adding a target means three places, all kept in lockstep by CI: the goreleaser
+`goarch` list, `npm/platforms/<os>-<arch>/package.json`, and the `SUPPORTED` map
+in `npm/bin/huddle.js`. `scripts/npm-publish-oidc.sh` also carries a literal
+platform list — a target missing from it is built, archived and never published.
 
 ## What each channel gives the user
 
@@ -83,10 +94,12 @@ Ordered, because several steps depend on the repo being public.
 
 1. **Make the repo public.** winget validation and npm `--provenance` both
    require a public source repo. Nothing below works until this is done.
-2. **Bootstrap the six npm packages.** Trusted publishing is configured per
+2. **Bootstrap the seven npm packages.** Trusted publishing is configured per
    package in npm's web UI, which cannot be done for a package that does not
    exist. Publish each once from a granular token, then set Trusted Publisher →
-   GitHub Actions → `muthuishere/huddle-next` → `npm-publish.yml` on all six.
+   GitHub Actions → `muthuishere/huddle-next` → `npm-publish.yml` on all seven:
+   the `@muthuishere/huddle` launcher and `@muthuishere/huddle-{darwin,linux}-{arm64,x64}`
+   plus `@muthuishere/huddle-windows-{arm64,x64}`.
 3. **Create `muthuishere/homebrew-tap`** if absent (it exists, holding
    `Casks/crossmem.rb`) and add `HOMEBREW_TAP_GITHUB_TOKEN` — a fine-grained
    token with `contents: write` on that repo only.
@@ -102,8 +115,8 @@ Ordered, because several steps depend on the repo being public.
 Check the artifact, not the green tick:
 
 ```bash
-gh release view v<version>                      # 5 archives + checksums + deb/rpm
-npm view @muthuishere/huddle version            # all 6 packages live
+gh release view v<version>                      # 6 archives + checksums + deb/rpm
+npm view @muthuishere/huddle version            # all 7 packages live
 brew install --cask muthuishere/tap/huddle      # on a clean machine
 winget install Muthuishere.Huddle               # on Windows
 huddle doctor                                   # exits 0, every check OK

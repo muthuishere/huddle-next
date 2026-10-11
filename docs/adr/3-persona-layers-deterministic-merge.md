@@ -1,8 +1,19 @@
+---
+id: adr-3
+kind: adr
+status: approved
+author: muthuishere
+links: {}
+---
 # ADR 3: Persona Layers — Global Folder + In-Repo `.huddle/personas/`, Merged in Code
 
-- Status: accepted — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw decision: README Inputs)
 - Date: 2026-09-14
 - v1: built (ADR 19)
+
+## Status
+
+**approved** — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw
+decision: `README.md` → Inputs). The front matter `status:` field is the status of record.
 
 ## Decision
 
@@ -49,3 +60,14 @@
 - Team personas get reviewed in PRs like any other policy file (playbook: skills as versioned policy).
 - `<repo>/.huddle/personas/` arrives via `git clone`; trust hashing (ADR 5) is deferred in v1 (ADR 19), so repo personas load like any committed file.
 - Behaviour change: memories concatenate instead of whatever the model did before.
+
+## binds
+
+- Exactly three persona layers, lowest to highest: builtin < `~/.config/.huddle/personas` <
+  `<repo>/.huddle/personas`, merged in Go by a deterministic, documented rule.
+- `huddle persona resolve <id>` is the single answer to "which layer won, and why".
+
+## prevents
+
+- No fourth layer and no per-user-in-repo layer (ADR 19).
+- No merge semantics described in skill prose, and no model-mediated merge: the code decides.

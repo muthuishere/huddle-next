@@ -25,6 +25,8 @@ Reads ~/.config/.huddle/usage.jsonl (one line per huddle invocation, no
 arguments, never sent anywhere) and the repo event log. Shows totals, human vs
 agent share, commands with count/errors/p50/p95 against budgets, skills, top
 repos, a per-day sparkline, and flow metrics for the repo.
+P50_MS/P95_MS and BUDGET are in-process dispatch times; process start is not
+included, so they are smaller than the latency a user feels at the shell.
 Defaults: --since 30d, the current repo (all repos outside a project).
 Opt out: huddle config set usage false --scope global, or HUDDLE_NO_USAGE=1.
 `
@@ -145,6 +147,10 @@ func renderStats(w io.Writer, r StatsResult, sinceArg string, now time.Time) {
 			rows = append(rows, []string{cs.Cmd, fmt.Sprint(cs.Count), fmt.Sprint(cs.Errors), fmtMS(cs.P50MS), fmtMS(cs.P95MS), pct(cs.Agent, cs.Count), budget})
 		}
 		output.Table(w, []string{"  COMMAND", "COUNT", "ERRORS", "P50_MS", "P95_MS", "AGENT", "BUDGET"}, indentRows(rows))
+		fmt.Fprintf(w, "  BUDGET is a p50 in-process dispatch budget — process start (~5 ms) is not in P50_MS.\n"+
+			"  huddle start's %d ms end-to-end budget (ADR 13/19) is checked against the built binary.\n"+
+			"  \"-\" means no latency contract: serve is long-running, context shells out, unknown is not a command.\n",
+			usage.StartEndToEndBudgetMS)
 
 		if len(s.Skills) > 0 {
 			fmt.Fprintln(w, "\nSkills")

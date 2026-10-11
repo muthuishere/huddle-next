@@ -1,8 +1,20 @@
+---
+id: adr-1
+kind: adr
+status: approved
+author: muthuishere
+links: {}
+---
 # ADR 1: One CGO-free Go Binary, npm-Wrapped, Installing Its Own Skill
 
-- Status: accepted — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw decision: README Inputs)
 - Date: 2026-09-14
 - v1: built (ADR 19)
+- Amended 2026-10-11: §3's target list gains windows/arm64 — see Open questions.
+
+## Status
+
+**approved** — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw
+decision: `README.md` → Inputs). The front matter `status:` field is the status of record.
 
 ## Decision
 
@@ -60,3 +72,30 @@ Command surface (initial):
 ## Open questions
 
 - None open. (Analytics: not ported — ADR 11.)
+
+### Amendment, 2026-10-11 — windows/arm64
+
+§3 above copied crossmemcli's target list, which stops at windows/amd64. That left
+`npm/platforms/` with five packages while the npm launcher advertises
+`"os": ["darwin","linux","win32"]` x `"cpu": ["arm64","x64"]` — npm reads those two fields as a
+cross product, so a Windows-on-ARM user could always install `@muthuishere/huddle` and then be told
+`unsupported platform win32-arm64` by the launcher. npm has no way to express "win32 only on x64",
+so the choice was to ship the binary or drop `win32` (or `arm64`) from the launcher entirely.
+`CGO_ENABLED=0` makes the extra target a build and nothing else, so §3's list is now
+darwin + linux x amd64 + arm64 **and windows x amd64 + arm64**, with a sixth platform package
+`@muthuishere/huddle-windows-arm64`. The `ignore:` block in `.goreleaser.yaml` is gone.
+
+## binds
+
+- Every helper and every deterministic step is a `huddle` subcommand of one binary; the binary and
+  the skills it installs are always the same version, because the skills are embedded in it.
+- `CGO_ENABLED=0` for every target, so one artifact per OS/arch and no toolchain on the user's box.
+- A new install channel is one row in the distribution table (goreleaser build → post-build copy into
+  `npm/platforms/<os>-<arch>/bin/` → tag-triggered OIDC publish), never a bespoke installer.
+
+## prevents
+
+- No interpreter on the runtime path, and no `install.sh` / `install.cmd` symlink install.
+- No symlinked skill directories — copies only, because symlinks break on Windows.
+- No cgo dependency; a SQLite need is met by a pure-Go driver or not at all.
+- The npm package never grows logic of its own: it is a launcher, never a second implementation.

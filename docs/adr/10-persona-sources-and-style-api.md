@@ -1,8 +1,19 @@
+---
+id: adr-10
+kind: adr
+status: approved
+author: muthuishere
+links: {}
+---
 # ADR 10: Personas from Any Data — One Ingest Route, Import, Proposals, and a Style API
 
-- Status: accepted — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw decision: README Inputs)
 - Date: 2026-09-14
 - v1: built; deferred: §5 discover/propose, §6 analyze (ADR 19)
+
+## Status
+
+**approved** — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw
+decision: `README.md` → Inputs). The front matter `status:` field is the status of record.
 
 ## Decision
 
@@ -52,3 +63,14 @@
 ## Open questions
 
 - Refresh: `ingest --replace` vs append-only evidence with `--since` windows in `analyze`?
+
+## binds
+
+- One documented ingest route (`huddle persona ingest`) for every possible persona source, and a
+  CLI-served style/brief API on the way out.
+- Whoever holds the data brings it; huddle's job is shaping it into personas.
+
+## prevents
+
+- No built-in git, GitHub, Jira, mail or chat adapter inside huddle.
+- No second, undocumented way for data to become a persona.

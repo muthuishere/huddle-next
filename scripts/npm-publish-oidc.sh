@@ -36,8 +36,13 @@ publish_package() {
   (cd "$dir" && npm publish --access public --provenance)
 }
 
-for platform in darwin-arm64 darwin-x64 linux-arm64 linux-x64 windows-x64; do
-  dir="${ROOT_DIR}/npm/platforms/${platform}"
+# Derived from the directories goreleaser populates, never a literal list: a
+# hand-maintained list silently stops publishing a platform the moment one is
+# added, leaving the launcher's optionalDependencies pointing at a package that
+# does not exist on the registry.
+for dir in "${ROOT_DIR}"/npm/platforms/*/; do
+  platform="$(basename "${dir%/}")"
+  dir="${dir%/}"
   bin="huddle"
   [[ "$platform" == windows-* ]] && bin="huddle.exe"
   if [[ ! -f "${dir}/bin/${bin}" ]]; then

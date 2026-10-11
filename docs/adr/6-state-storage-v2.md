@@ -1,8 +1,20 @@
+---
+id: adr-6
+kind: adr
+status: proposed
+author: muthuishere
+links: {}
+---
 # ADR 6: Versioned, Atomic, Permissive State Storage
 
-- Status: proposed
 - Date: 2026-09-14
 - v1: built (ADR 19)
+
+## Status
+
+**proposed** — the decision stands; it is only partly implemented. The `v1:` line above and
+**Open questions** name which clauses landed and which did not. The front matter `status:` field
+is the status of record.
 
 ## Decision
 
@@ -69,3 +81,15 @@ used by every command).
 - §7 `branch.json` recording the original branch name is not written — no `branch.json` in `internal/`.
 - `huddle-state.json` from the §1 layout is never written at all. Harmless by ADR 19 row 4 (it is a
   derived cache, never truth), but §6's lock is then moot and the §1 layout is aspirational.
+
+## binds
+
+- One global root, `~/.config/.huddle/` (override `HUDDLE_HOME`), with a version field, atomic
+  writes and permissive reads.
+- Global paths are built in one place (`internal/paths`), never at a call site.
+
+## prevents
+
+- No second state root and no state inside the repo beyond `.huddle/`.
+- No in-place write that can truncate state, and no command that aborts because a state file is
+  corrupt or from a newer version — it reports and carries on.

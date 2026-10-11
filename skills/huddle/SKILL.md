@@ -1,11 +1,13 @@
 ---
 name: huddle
-description: Expert room for decisions, research, verification and wrap-up. Use for "start a huddle", "huddle up", "what does the team think", "pressure-test this", "what's new in X", "what did we decide", "wrap up". Not for SDLC stages or persona authoring.
+description: Expert room for decisions, research, verification, wrap-up and headless decisions. Use for "start a huddle", "what does the team think", "pressure-test this", "what's new in X", "wrap up", "decide this without me". Not for SDLC stages or persona authoring.
 ---
 
 # Huddle — the room
 
-Personas give perspective, then STOP. The user decides. You never decide for them.
+Personas give perspective, then STOP. The user decides. You never decide for them —
+except in `modes/autonomous.md`, the one explicitly-entered headless mode where an
+owner persona decides and owner-level forks still go to the human.
 
 ## 1. Start (always, exactly one call)
 
@@ -32,6 +34,7 @@ Do not re-read config, logs, or git with other tools — `start` already did.
 | verify, pressure-test, "is this done", "is this sound", review a claim | `modes/verification.md` |
 | "what's happening in", latest / trends on a topic, gather sources, ecosystem scan | `modes/research.md` |
 | "wrap up", "that's enough", "save and pause", "summarise", "action items" | `modes/wrap-up.md` |
+| "decide this without me", "autonomous huddle", "convene the deciders", a fleet call | `modes/autonomous.md` |
 | intent / spec / plan / deploy / CLAUDE.md / "what stage are we in" | hand off to the `huddle-sdlc` skill |
 | create, import, or style a persona | hand off to the `huddle-personas` skill |
 

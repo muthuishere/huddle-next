@@ -1,8 +1,20 @@
+---
+id: adr-9
+kind: adr
+status: proposed
+author: muthuishere
+links: {}
+---
 # ADR 9: Parity Fixtures, Asset Lint, and Behaviour Evals
 
-- Status: proposed
 - Date: 2026-09-14
 - v1: built; deferred: touchfile selection, LLM judge (ADR 19)
+
+## Status
+
+**proposed** — the decision stands; it is only partly implemented. The `v1:` line above and
+**Open questions** name which clauses landed and which did not. The front matter `status:` field
+is the status of record.
 
 ## Decision
 
@@ -54,3 +66,14 @@ checked against the live command registry, so no stale subcommand survives
 - §2's "doc contradictions become failing lint cases" is not implemented: the lint parses `huddle`
   subcommands only, so the dead `references/` paths left by ADR 11 pass unnoticed.
 - CI does not fail on a >25% benchmark regression; `.github/workflows/ci.yml` never runs `task bench`.
+
+## binds
+
+- A script's JSON shape is pinned by a fixture before the script is deleted.
+- Every embedded asset is lint-checked, and every `huddle <cmd> --flag` written in skill text must
+  exist in the command registry — a test proves it.
+
+## prevents
+
+- No behaviour ported on inspection alone; parity is asserted, not asserted-to.
+- No eval tier that needs a model to run in the cheap, every-PR layer.

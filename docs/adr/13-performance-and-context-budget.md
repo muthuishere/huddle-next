@@ -1,9 +1,21 @@
+---
+id: adr-13
+kind: adr
+status: proposed
+author: muthuishere
+links: {}
+---
 # ADR 13: Performance Is a Budget — Wall-Clock, Tool Calls, and Tokens, Enforced in CI
 
-- Status: proposed
 - Date: 2026-09-14
 - v1: built; deferred: `context-bill` (ADR 19)
 - Builds on: ADR 2 (preflight), ADR 11 (slim)
+
+## Status
+
+**proposed** — the decision stands; it is only partly implemented. The `v1:` line above and
+**Open questions** name which clauses landed and which did not. The front matter `status:` field
+is the status of record.
 
 ## Decision
 
@@ -81,3 +93,15 @@ budgets as a CI gate (`internal/install/budget_test.go:12-18`, `.github/workflow
   `go:generate` directive in the repo. The drift check that does exist
   (`internal/app/skills_sync_test.go`) validates subcommands, not generated indexes.
 - §A4's 24 h update check is not implemented.
+
+## binds
+
+- Wall-clock, tool calls and tokens are budgets with tests behind them: `huddle start` p50 ≤ 60 ms /
+  p95 ≤ 150 ms warm, `start` output ≤ 2 KB, `SKILL.md` ≤ 6 KB, each lazy file ≤ 8 KB.
+- `SKILL.md` stays a router; modes, writers and personas are read only when active.
+
+## prevents
+
+- A limit is never raised to make a change fit — the cause is fixed instead.
+- No daemon or persistent server to buy back start time.
+- No always-loaded catalog: nothing large is read "just in case".

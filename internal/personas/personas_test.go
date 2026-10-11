@@ -182,8 +182,8 @@ func TestBuiltinsPassLint(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(r.Personas) != 21 {
-		t.Fatalf("want 21 builtins, got %d", len(r.Personas))
+	if len(r.Personas) != 22 {
+		t.Fatalf("want 22 builtins, got %d", len(r.Personas))
 	}
 	issues, err := r.Lint("")
 	if err != nil {
@@ -437,13 +437,13 @@ func TestResolveBudget(t *testing.T) {
 		start := time.Now()
 		r, err := Resolve(srcs)
 		d[i] = time.Since(start)
-		if err != nil || len(r.Personas) != 221 {
+		if err != nil || len(r.Personas) != 222 {
 			t.Fatalf("resolve: %v (%d personas)", err, len(r.Personas))
 		}
 	}
 	sort.Slice(d, func(a, b int) bool { return d[a] < d[b] })
 	p50 := d[runs/2]
-	t.Logf("Resolve 200 synthetic + 21 builtin personas: p50 %v", p50)
+	t.Logf("Resolve 200 synthetic + 22 builtin personas: p50 %v", p50)
 	if p50 > 20*time.Millisecond {
 		t.Errorf("Resolve p50 %v > 20ms budget", p50)
 	}

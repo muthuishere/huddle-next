@@ -1,9 +1,21 @@
+---
+id: adr-17
+kind: adr
+status: proposed
+author: muthuishere
+links: {}
+---
 # ADR 17: Lifecycle Hooks for the Entire Process — Bring Your Own gh, Jira, Slack, Anything
 
-- Status: proposed
 - Date: 2026-09-14
 - v1: built (hooks in `config.json`, no trust) (ADR 19)
 - Builds on: ADR 10 (ingest route), 14 (event log), 16 (orchestrator)
+
+## Status
+
+**proposed** — the decision stands; it is only partly implemented. The `v1:` line above and
+**Open questions** name which clauses landed and which did not. The front matter `status:` field
+is the status of record.
 
 ## Decision
 
@@ -103,3 +115,15 @@ Two consequences:
 
 `stress-test.md:45` already proposes the fix: ship `stage.*`, `artifact.*`, `gate.*` and
 `verdict.issued` first.
+
+## binds
+
+- Every lifecycle event huddle emits can run a user hook, declared in global or repo
+  `config.json` and fired by the CLI — so it happens deterministically, not "if the model
+  remembers".
+- Hook output passes the single redaction choke point before it is stored or shown to an agent.
+
+## prevents
+
+- No built-in GitHub, Jira, Linear, Slack or mail integration ships inside huddle.
+- No hook can approve a gate, and no hook runs on the `huddle start` hot path.

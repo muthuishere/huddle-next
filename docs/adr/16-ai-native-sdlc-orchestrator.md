@@ -1,10 +1,21 @@
+---
+id: adr-16
+kind: adr
+status: approved
+author: muthuishere
+links: {}
+---
 # ADR 16: Huddle Is the AI-Native SDLC Orchestrator
 
-- Status: accepted — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw decision: README Inputs)
 - Date: 2026-09-14
 - v1: built; deferred: §3 dispatch automation (v1: plan + task brief), §10 `huddle team` (ADR 19)
 - Product spine — every other ADR serves this one.
 - Builds on: ADR 12 (writers, playbook layout), 14 (event log, verdicts, room modes), 15 (subagents)
+
+## Status
+
+**approved** — 2026-10-10, owner decision; event `20261010T045742.452Z-01d288` (originating raw
+decision: `README.md` → Inputs). The front matter `status:` field is the status of record.
 
 ## Decision
 
@@ -77,3 +88,14 @@ surface than written:
 - §8 `huddle sdlc status --metrics` does not exist; the metrics it names are computed and surfaced by
   `huddle stats` and the dashboard (`internal/usage/flow.go:32`, `internal/serve/analytics.go:16`)
   per ADR 20 §4. Amend §8 to point at `stats`, or add the flag.
+
+## binds
+
+- Every stage from setup to maintain has a huddle entry point, a stated definition of done, and a
+  human gate; `huddle sdlc status` can always say where a change is.
+- Every other ADR serves this one; a feature that does not advance a stage needs a reason.
+
+## prevents
+
+- No stage that only an agent can see or drive — a person with a terminal can run all of it.
+- Huddle never pushes, merges, deploys or commits: it prepares and gates, humans act.
