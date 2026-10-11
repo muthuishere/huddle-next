@@ -16,10 +16,12 @@ func init() {
 
 const installHelp = `
 Usage:
-  huddle install --skills [--agents] [--force] [--dry-run] [--json]
-  huddle uninstall --skills [--agents] [--dry-run] [--json]
+  huddle install [--agents] [--force] [--dry-run] [--json]
+  huddle uninstall [--agents] [--dry-run] [--json]
 
-Installs the embedded skills (huddle, huddle-sdlc, huddle-personas) into
+Installs the embedded skills (huddle, huddle-sdlc, huddle-personas) -- the
+skill family is the product, so this is what a bare "huddle install" does;
+--skills is still accepted and means the same thing -- into
 Claude's skills root -- $CLAUDE_SKILLS_DIR, else $CLAUDE_CONFIG_DIR/skills,
 else ~/.claude/skills -- and, when codex is on PATH or --agents is given,
 ~/.agents/skills ($AGENTS_SKILLS_DIR). Each dir is replaced atomically
@@ -54,8 +56,12 @@ func installCmd(c *Ctx, verb string, args []string) error {
 	if a.bools["help"] {
 		return coreHelp(c, installHelp)
 	}
-	if !a.bools["skills"] || len(a.pos) > 0 {
-		return Usagef("run: huddle %s --skills [--agents]", verb)
+	// The skill family IS the product, so installing huddle installs it: bare
+	// `huddle install` does the same thing as `huddle install --skills`. The flag
+	// stays accepted so every published postinstall hook and the brew cask keep
+	// working unchanged, but it is no longer something a human has to know.
+	if len(a.pos) > 0 {
+		return Usagef("run: huddle %s [--agents]", verb)
 	}
 	targets, err := install.DefaultTargets(a.bools["agents"])
 	if err != nil {

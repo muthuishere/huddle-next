@@ -14,12 +14,22 @@ func TestInstallUninstallSkills(t *testing.T) {
 	t.Setenv("AGENTS_SKILLS_DIR", filepath.Join(dir, "agents"))
 	t.Setenv("PATH", t.TempDir()) // no codex
 
-	if _, err := runCore(t, root, "install"); err == nil {
-		t.Fatal("install without --skills accepted")
-	}
-	out, err := runCore(t, root, "install", "--skills")
+	// The skill family is the product: a bare `huddle install` installs it. This
+	// is asserted rather than assumed because the whole value proposition is that
+	// nobody has to know a flag to get the skills, and a stray positional must
+	// still be refused rather than silently treated as an install.
+	out, err := runCore(t, root, "install")
 	if err != nil || !strings.Contains(out, "huddle-sdlc") {
-		t.Fatalf("%v %s", err, out)
+		t.Fatalf("bare install did not install the skill family: %v %s", err, out)
+	}
+	if _, err := runCore(t, root, "install", "bogus"); err == nil {
+		t.Fatal("install accepted a positional argument")
+	}
+	// --skills keeps working: every published postinstall hook and the brew cask
+	// pass it, so dropping it would break installs already in the wild.
+	out, err = runCore(t, root, "install", "--skills")
+	if err != nil || !strings.Contains(out, "huddle-sdlc") {
+		t.Fatalf("--skills no longer accepted: %v %s", err, out)
 	}
 	if _, err := os.Stat(filepath.Join(dir, "claude", "huddle-sdlc", "stages", "plan.md")); err != nil {
 		t.Fatal(err)
