@@ -1,12 +1,24 @@
 {
   "name": "skill-mode-parity",
   "prompt": "In this repo, ask the huddle skill to run a research round: \"research what competing AI-native SDLC tools do about human gates, with sources\". The agent must load the matching mode file and follow it.",
-  "origin": "2026-10 port of the Python huddle skill to Go. The legacy skill routed six modes (discussion, research, spec-review, planning, verification, wrap-up); only three were carried into skills/. `grep -ri research skills/` returned nothing, so every research request silently fell back to the generic discussion flow, and nobody noticed because no check compared the router's mode list with the files on disk.",
+  "origin": "2026-10 port of the Python huddle skill to Go. The legacy router (../huddle/references/activation-routing.xml) named seven modes (brainstorming, discussion, planning, research, spec-review, verification, wrap-up); only three were carried into skills/. `grep -ri research skills/` returned nothing, so every research request silently fell back to the generic discussion flow, and nobody noticed because no check compared the router's mode list with the files on disk. Research was restored 2026-10-10 and the check added — but the check pinned only `research`, so brainstorming, planning and spec-review stayed missing for another day. The contract is the whole mode list, both directions.",
   "added": "2026-10-10",
   "checks": [
     {
       "type": "command",
-      "why": "Every mode the SKILL.md router names must exist as a file. This is the check that was missing.",
+      "why": "Legacy parity, mode by mode: every mode the Python router named exists as a file here. Enumerated, not sampled — a one-mode check is what let three modes stay dropped.",
+      "run": "miss=; for m in brainstorming discussion planning research spec-review verification wrap-up; do test -f \"skills/huddle/modes/$m.md\" || miss=\"$miss $m\"; done; test -z \"$miss\" || { echo \"LEGACY MODES MISSING:$miss\"; exit 1; }",
+      "expect": "exit 0"
+    },
+    {
+      "type": "command",
+      "why": "A restored mode must also be reachable: every legacy mode's file is routed to from SKILL.md, or it is dead weight nobody can enter.",
+      "run": "bad=; for m in brainstorming discussion planning research spec-review verification wrap-up; do grep -q \"modes/$m.md\" skills/huddle/SKILL.md || bad=\"$bad $m\"; done; test -z \"$bad\" || { echo \"LEGACY MODES NOT ROUTED:$bad\"; exit 1; }",
+      "expect": "exit 0"
+    },
+    {
+      "type": "command",
+      "why": "Forward direction for modes beyond the legacy set (e.g. autonomous): every mode the SKILL.md router names must exist as a file.",
       "run": "for m in $(grep -oE 'modes/[a-z-]+\\.md' skills/huddle/SKILL.md | sort -u); do test -f \"skills/huddle/$m\" || { echo \"MISSING skills/huddle/$m\"; exit 1; }; done",
       "expect": "exit 0"
     },
@@ -18,8 +30,14 @@
     },
     {
       "type": "command",
-      "why": "Legacy parity: each mode the Python skill supported is either present or recorded as deliberately dropped in an ADR.",
-      "run": "for m in discussion research spec-review planning verification wrap-up; do test -f \"skills/huddle/modes/$m.md\" || grep -rqi \"$m\" docs/adr/ || { echo \"DROPPED WITHOUT A RECORD: $m\"; exit 1; }; done",
+      "why": "A mode present as a file but never named in the budget test's requiredLazy list can be deleted without a failure — that is how a mode disappears quietly.",
+      "run": "for m in brainstorming discussion planning research verification wrap-up autonomous; do grep -q \"modes/$m.md\" internal/install/budget_test.go || { echo \"NOT IN requiredLazy: $m\"; exit 1; }; done",
+      "expect": "exit 0"
+    },
+    {
+      "type": "command",
+      "why": "Brainstorming must stay divergent. Collapsing it into the discussion flow is the same silent-fallback failure as the dropped research mode.",
+      "run": "grep -qi 'do \\*\\*not\\*\\* converge\\|not converge' skills/huddle/modes/brainstorming.md && grep -qi 'modes/discussion.md' skills/huddle/modes/brainstorming.md",
       "expect": "exit 0"
     },
     {

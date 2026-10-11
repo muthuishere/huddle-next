@@ -14,6 +14,7 @@ import (
 	"github.com/muthuishere/huddle-next/internal/config"
 	"github.com/muthuishere/huddle-next/internal/gates"
 	"github.com/muthuishere/huddle-next/internal/repo"
+	"github.com/muthuishere/huddle-next/internal/specframework"
 )
 
 // Stage is one artifact of a change.
@@ -63,7 +64,11 @@ type Report struct {
 	ReviewPolicy Presence     `json:"reviewPolicy"`
 	Bands        Presence     `json:"bands"`
 	Evals        int          `json:"evals"`
-	Next         Step         `json:"next"`
+	// SpecFramework is an external spec framework noticed in the repo, or nil
+	// (the normal case). Filesystem detection only — Status starts no process,
+	// so `huddle serve` and every other caller stay exec-free (ADR 23).
+	SpecFramework *specframework.Detection `json:"specFramework,omitempty"`
+	Next          Step                     `json:"next"`
 }
 
 // Step is the single next action.
@@ -151,6 +156,7 @@ func Status(info repo.Info, cfg config.Config) (Report, error) {
 	if evals, err := artifacts.Discover(root, cfg, "eval"); err == nil {
 		r.Evals = len(evals)
 	}
+	r.SpecFramework = specframework.Detect(root)
 
 	all, err := gates.Load(info.Name)
 	if err != nil {

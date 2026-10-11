@@ -1,12 +1,14 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/muthuishere/huddle-next/internal/artifacts"
 	"github.com/muthuishere/huddle-next/internal/output"
 	"github.com/muthuishere/huddle-next/internal/sdlc"
+	"github.com/muthuishere/huddle-next/internal/specframework"
 )
 
 func init() {
@@ -17,6 +19,10 @@ const sdlcHelp = `Usage: huddle sdlc <verb> [--json]
 
   status   per intent: intent/spec/plan status, pending gates, verdict (+stale), open spikes
   next     the lowest missing stage and the exact command to run
+
+status also reports an external spec framework (e.g. an openspec/ directory)
+when one is present, and where its files are. Huddle has no dependency on it:
+with none present, status reports huddle's native paths and nothing changes.
 `
 
 func runSdlc(c *Ctx, args []string) error {
@@ -50,14 +56,25 @@ func runSdlc(c *Ctx, args []string) error {
 		output.KV(c.Stdout, "STAGE", r.Next.Stage, "WHY", r.Next.Reason, "RUN", r.Next.Command)
 		return nil
 	}
+	// Reading the external framework's layout is the only place `huddle sdlc`
+	// starts a process, and `sdlc status` is human-invoked. `huddle start`
+	// never reaches here (ADR 23).
+	ext, _ := specframework.New(env.Repo.Root, r.SpecFramework).Changes(context.Background())
 	if a.Bools["json"] {
-		return output.JSON(c.Stdout, r)
+		return output.JSON(c.Stdout, sdlcJSON{Report: r, SpecFrameworkChanges: ext})
 	}
-	sdlcPrint(c, r)
+	sdlcPrint(c, r, ext)
 	return nil
 }
 
-func sdlcPrint(c *Ctx, r sdlc.Report) {
+// sdlcJSON is the report plus the external framework's changes, which are read
+// by exec and so are not part of sdlc.Report itself.
+type sdlcJSON struct {
+	sdlc.Report
+	SpecFrameworkChanges []specframework.Change `json:"specFrameworkChanges,omitempty"`
+}
+
+func sdlcPrint(c *Ctx, r sdlc.Report, ext []specframework.Change) {
 	w := c.Stdout
 	fmt.Fprintf(w, "%s @ %s\n\n", r.Repo, r.Branch)
 	yes := func(p sdlc.Presence) string {
@@ -108,5 +125,35 @@ func sdlcPrint(c *Ctx, r sdlc.Report) {
 	if len(r.OpenSpikes) > 0 {
 		fmt.Fprintf(w, "OPEN SPIKES: %s\n", strings.Join(r.OpenSpikes, ", "))
 	}
+	if r.SpecFramework != nil {
+		fmt.Fprintf(w, "\nSPEC FRAMEWORK: %s\n", specframework.Line(r.SpecFramework))
+		for _, ch := range ext {
+			state := "in progress"
+			if ch.Complete {
+				state = "complete"
+			}
+			var have, want []string
+			for _, art := range ch.Artifacts {
+				label := art.Kind
+				if art.Native != "" {
+					label += "\u2192" + art.Native
+				}
+				if art.Exists {
+					have = append(have, label)
+				} else {
+					want = append(want, label)
+				}
+			}
+			fmt.Fprintf(w, "  %s (%s) %s — has: %s; missing: %s\n", ch.ID, state, ch.Dir,
+				orNone(have), orNone(want))
+		}
+	}
 	fmt.Fprintf(w, "\nNEXT: %s\n  %s\n", r.Next.Reason, r.Next.Command)
+}
+
+func orNone(v []string) string {
+	if len(v) == 0 {
+		return "-"
+	}
+	return strings.Join(v, ", ")
 }

@@ -1,6 +1,6 @@
 ---
 name: huddle
-description: Expert room for decisions, research, verification, wrap-up and headless decisions. Use for "start a huddle", "what does the team think", "pressure-test this", "what's new in X", "wrap up", "decide this without me". Not for SDLC stages or persona authoring.
+description: Expert room for decisions: brainstorm, plan, research, pressure-test, wrap up, decide headlessly. Use for "start a huddle", "what does the team think", "brainstorm this", "sequence this work", "is this sound". Not for SDLC stages or persona authoring.
 ---
 
 # Huddle — the room
@@ -31,14 +31,19 @@ Do not re-read config, logs, or git with other tools — `start` already did.
 | User intent | Load |
 |---|---|
 | discuss, debate, tradeoffs, "what do you think", "help me think" | `modes/discussion.md` |
+| "brainstorm this", "I need ideas", "explore options", alternatives, ideation | `modes/brainstorming.md` |
+| "make a plan", sequence this work, order of work, "how do we implement this" | `modes/planning.md` |
 | verify, pressure-test, "is this done", "is this sound", review a claim | `modes/verification.md` |
 | "what's happening in", latest / trends on a topic, gather sources, ecosystem scan | `modes/research.md` |
-| "wrap up", "that's enough", "save and pause", "summarise", "action items" | `modes/wrap-up.md` |
+| review a spec, "poke holes in this spec", find the gaps before we build | `modes/spec-review.md` |
+| "wrap up", "save and pause", "summarise", "action items", "what did we decide" | `modes/wrap-up.md` |
 | "decide this without me", "autonomous huddle", "convene the deciders", a fleet call | `modes/autonomous.md` |
 | intent / spec / plan / deploy / CLAUDE.md / "what stage are we in" | hand off to the `huddle-sdlc` skill |
 | create, import, or style a persona | hand off to the `huddle-personas` skill |
 
-Pick the narrowest mode. If two fit, name both and ask.
+Pick the narrowest mode. If two fit, name both and ask. Generating options is
+brainstorming; choosing among them is discussion. Deliberating a sequence is planning;
+writing `intent/<slug>/plan.md` is `huddle-sdlc`.
 
 ## 3. Voice rules (every mode)
 

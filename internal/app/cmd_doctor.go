@@ -13,6 +13,7 @@ import (
 	"github.com/muthuishere/huddle-next/internal/install"
 	"github.com/muthuishere/huddle-next/internal/output"
 	"github.com/muthuishere/huddle-next/internal/paths"
+	"github.com/muthuishere/huddle-next/internal/specframework"
 	"github.com/muthuishere/huddle-next/internal/version"
 )
 
@@ -26,7 +27,8 @@ Usage:
 
 Checks: binary version, global root writable, legacy roots (suggests huddle
 migrate), config JSON valid at both scopes, hook commands resolvable, installed
-skills match this binary's version, git present (optional).
+skills match this binary's version, git present (optional), and whether an
+external spec framework (e.g. openspec/) is present — informational only.
 Exits non-zero when any check fails; warnings don't fail.
 `
 
@@ -178,6 +180,10 @@ func doctorChecks(root string) []DoctorCheck {
 			}
 		}
 	}
+
+	// External spec framework (informational — absence is the normal case and
+	// never a defect, so this is always "ok"; ADR 23).
+	add("spec-framework", "ok", specframework.Line(specframework.Detect(root)), "")
 
 	// git (optional).
 	if p, err := exec.LookPath("git"); err == nil {
