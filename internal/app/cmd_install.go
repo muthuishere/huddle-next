@@ -20,8 +20,9 @@ Usage:
   huddle uninstall --skills [--agents] [--json]
 
 Installs the embedded skills (huddle, huddle-sdlc, huddle-personas) into
-~/.claude/skills ($CLAUDE_SKILLS_DIR) and, when codex is on PATH or --agents is
-given, ~/.agents/skills ($AGENTS_SKILLS_DIR). Each dir is replaced atomically
+Claude's skills root -- $CLAUDE_SKILLS_DIR, else $CLAUDE_CONFIG_DIR/skills,
+else ~/.claude/skills -- and, when codex is on PATH or --agents is given,
+~/.agents/skills ($AGENTS_SKILLS_DIR). Each dir is replaced atomically
 and carries a .huddle-owned marker. Existing dirs without the marker are left
 alone unless --force. An old install.sh symlink named "huddle" that points at a
 repo checkout is replaced and reported.

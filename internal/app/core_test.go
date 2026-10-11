@@ -16,6 +16,36 @@ import (
 	"github.com/muthuishere/huddle-next/internal/paths"
 )
 
+// TestMain puts the real agent skill roots out of reach for the whole package.
+//
+// Isolating HOME is not enough: CLAUDE_CONFIG_DIR and the two *_SKILLS_DIR
+// variables are absolute paths read from the ambient environment, so a HOME
+// temp dir cannot contain them. `huddle start` syncs the skills now, and the
+// start tests here go through that path — with CLAUDE_CONFIG_DIR set to a real
+// relocated config dir, running the suite replaced the developer's own
+// installed skills. Neutralising the variables before any test runs makes that
+// impossible; a test that wants a specific root still sets it with t.Setenv.
+func TestMain(m *testing.M) {
+	dir, err := os.MkdirTemp("", "huddle-test-roots")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "test roots:", err)
+		os.Exit(1)
+	}
+	for k, v := range map[string]string{
+		"CLAUDE_CONFIG_DIR": filepath.Join(dir, "claude-config"),
+		"CLAUDE_SKILLS_DIR": filepath.Join(dir, "claude-skills"),
+		"AGENTS_SKILLS_DIR": filepath.Join(dir, "agents-skills"),
+	} {
+		if err := os.Setenv(k, v); err != nil {
+			fmt.Fprintln(os.Stderr, "test roots:", err)
+			os.Exit(1)
+		}
+	}
+	code := m.Run()
+	_ = os.RemoveAll(dir)
+	os.Exit(code)
+}
+
 // coreEnv isolates HUDDLE_HOME and HOME and returns a fake git repo root.
 func coreEnv(t testing.TB) string {
 	t.Helper()

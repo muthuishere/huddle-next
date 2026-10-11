@@ -116,6 +116,13 @@ Each line is a mistake made in this repo, with the correct behaviour and the eva
   `ErrExists`; huddle only edits its own block. Take the body from
   `huddle guardrails new --dry-run`, place it between the `huddle:context` markers, then
   `huddle guardrails lint`.
+- **Isolating HOME and assuming the real agent dirs are out of reach.** `huddle start`
+  syncs the skills, and `runCore(t, root, "start")` goes through that path. `coreEnv`
+  isolates `HOME`, but `CLAUDE_CONFIG_DIR` is an absolute path read from the ambient
+  environment, so `HOME` cannot contain it: running the suite replaced the developer's
+  own installed skills. A fallback that reads an absolute path from the environment
+  escapes `HOME`-based isolation — neutralise the variable in `TestMain`
+  (`internal/app/core_test.go`), not per test.
 - **Raising a limit to make a change fit.** The skill byte budget, `huddle start` p50 ≤ 60 ms
   and the 2 KB start output are decisions (ADR 13, 19). Fix the cause.
 <!-- /huddle:context -->

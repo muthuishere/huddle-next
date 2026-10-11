@@ -81,10 +81,16 @@ func SkillNames(fsys fs.FS) ([]string, error) {
 	return names, nil
 }
 
-// DefaultTargets returns ~/.claude/skills ($CLAUDE_SKILLS_DIR) always, and
-// ~/.agents/skills ($AGENTS_SKILLS_DIR) when codex is on PATH or includeAgents.
+// DefaultTargets returns Claude's skills root always, and ~/.agents/skills
+// ($AGENTS_SKILLS_DIR) when codex is on PATH or includeAgents.
+//
+// Claude's root is $CLAUDE_SKILLS_DIR, else $CLAUDE_CONFIG_DIR/skills, else
+// ~/.claude/skills. Honouring CLAUDE_CONFIG_DIR matters: a user who relocates
+// it reads skills only from there, so installing into ~/.claude/skills would
+// leave the name resolving to whatever was already in the real root (ADR 8
+// already reads relocated stores; the installer has to agree).
 func DefaultTargets(includeAgents bool) ([]Target, error) {
-	claude, err := rootDir("CLAUDE_SKILLS_DIR", ".claude", "skills")
+	claude, err := claudeSkillsDir()
 	if err != nil {
 		return nil, err
 	}
@@ -293,13 +299,28 @@ func linkTarget(link string) string {
 	return t
 }
 
-func rootDir(envKey string, fallback ...string) (string, error) {
-	if dir := strings.TrimSpace(os.Getenv(envKey)); dir != "" {
+// claudeSkillsDir resolves the skills root Claude actually reads.
+func claudeSkillsDir() (string, error) {
+	if dir := strings.TrimSpace(os.Getenv("CLAUDE_SKILLS_DIR")); dir != "" {
 		return dir, nil
+	}
+	if cfg := strings.TrimSpace(os.Getenv("CLAUDE_CONFIG_DIR")); cfg != "" {
+		return filepath.Join(cfg, "skills"), nil
+	}
+	return rootDir("", ".claude", "skills")
+}
+
+// rootDir returns $envKey when set, else ~/ joined with fallback. An empty
+// envKey skips the environment entirely.
+func rootDir(envKey string, fallback ...string) (string, error) {
+	if envKey != "" {
+		if dir := strings.TrimSpace(os.Getenv(envKey)); dir != "" {
+			return dir, nil
+		}
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return "", fmt.Errorf("resolve home for %s: %w", envKey, err)
+		return "", fmt.Errorf("resolve home for %s: %w", filepath.Join(fallback...), err)
 	}
 	return filepath.Join(append([]string{home}, fallback...)...), nil
 }

@@ -141,6 +141,40 @@ func TestDefaultTargetsEnv(t *testing.T) {
 	}
 }
 
+// A relocated CLAUDE_CONFIG_DIR is the root Claude really reads. Installing
+// into ~/.claude/skills instead left the old symlink there resolving the
+// `huddle` name to a pre-CLI skill, so the new one was never loaded.
+func TestDefaultTargetsHonoursClaudeConfigDir(t *testing.T) {
+	t.Setenv("CLAUDE_SKILLS_DIR", "")
+	t.Setenv("CLAUDE_CONFIG_DIR", "/tmp/cys")
+	ts, err := DefaultTargets(false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := filepath.Join("/tmp/cys", "skills"); ts[0].Dir != want {
+		t.Fatalf("claude root = %q, want %q", ts[0].Dir, want)
+	}
+
+	// An explicit CLAUDE_SKILLS_DIR still wins over the config dir.
+	t.Setenv("CLAUDE_SKILLS_DIR", "/tmp/explicit")
+	ts, err = DefaultTargets(false)
+	if err != nil || ts[0].Dir != "/tmp/explicit" {
+		t.Fatal(ts, err)
+	}
+
+	// With neither set, the default home root is used.
+	t.Setenv("CLAUDE_SKILLS_DIR", "")
+	t.Setenv("CLAUDE_CONFIG_DIR", "")
+	home, err := os.UserHomeDir()
+	if err != nil {
+		t.Skip("no home dir")
+	}
+	ts, err = DefaultTargets(false)
+	if err != nil || ts[0].Dir != filepath.Join(home, ".claude", "skills") {
+		t.Fatal(ts, err)
+	}
+}
+
 func TestEmbeddedSkillsInstall(t *testing.T) {
 	names, err := SkillNames(Skills())
 	if err != nil {
