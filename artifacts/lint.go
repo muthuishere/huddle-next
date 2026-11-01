@@ -137,7 +137,7 @@ func Lint(a Artifact, k Kind) []Finding {
 			}
 		}
 		if st := a.Front.Get("status"); st != "" && !validStatus(st) {
-			add("front-matter.status", "status %q must be one of %s", st, strings.Join(Statuses, "|"))
+			add("front-matter.status", "status %q must be one of %s", st, strings.Join(statuses, "|"))
 		}
 		if kind := a.Front.Get("kind"); kind != "" && kind != k.Name {
 			add("front-matter.kind", "kind %q does not match %s", kind, k.Name)
@@ -211,7 +211,7 @@ func Lint(a Artifact, k Kind) []Finding {
 }
 
 func validStatus(s string) bool {
-	for _, v := range Statuses {
+	for _, v := range statuses {
 		if strings.EqualFold(v, s) {
 			return true
 		}

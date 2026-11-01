@@ -30,7 +30,7 @@ tasks:
   lint:
     desc: gofmt check + go vet
     cmds:
-      - test -z "$(gofmt -l cmd internal assets skills)" || (gofmt -l cmd internal assets skills && exit 1)
+      - test -z "$(gofmt -l cmd internal personas room artifacts assets skills)" || (gofmt -l cmd internal personas room artifacts assets skills && exit 1)
       - GOWORK=off go vet ./...
 
   budget:

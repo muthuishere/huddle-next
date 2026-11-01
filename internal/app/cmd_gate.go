@@ -5,9 +5,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/muthuishere/huddle-next/internal/artifacts"
+	"github.com/muthuishere/huddle-next/artifacts"
 	"github.com/muthuishere/huddle-next/internal/gates"
 	"github.com/muthuishere/huddle-next/internal/output"
+	"github.com/muthuishere/huddle-next/internal/record"
 )
 
 // gateInteractive reports whether a human is at the terminal; tests swap it.
@@ -63,7 +64,7 @@ func gateRequest(c *Ctx, args []string) error {
 	if err != nil {
 		return err
 	}
-	g, err := gates.Request(gates.Deps{Root: env.Repo.Root, Env: env}, a.Pos[0], a.Flags["role"], a.Flags["name"], artifacts.CurrentUser(env.Cfg))
+	g, err := gates.Request(gates.Deps{Root: env.Repo.Root, Env: env}, a.Pos[0], a.Flags["role"], a.Flags["name"], record.CurrentUser(env.Cfg))
 	if err != nil {
 		return err
 	}
@@ -94,7 +95,7 @@ func gateDecide(c *Ctx, args []string, approve bool) error {
 			Agent:       gates.AgentSession(os.Getenv),
 			Interactive: gateInteractive(c),
 			As:          a.Flags["as"],
-			User:        artifacts.CurrentUser(env.Cfg),
+			User:        record.CurrentUser(env.Cfg),
 		},
 	})
 	if err != nil {

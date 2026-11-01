@@ -10,13 +10,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/muthuishere/huddle-next/internal/artifacts"
+	"github.com/muthuishere/huddle-next/artifacts"
 	"github.com/muthuishere/huddle-next/internal/config"
 	"github.com/muthuishere/huddle-next/internal/gates"
 	"github.com/muthuishere/huddle-next/internal/hooks"
 	"github.com/muthuishere/huddle-next/internal/paths"
-	"github.com/muthuishere/huddle-next/internal/personas"
 	"github.com/muthuishere/huddle-next/internal/sdlc"
+	"github.com/muthuishere/huddle-next/personas"
 )
 
 // Warning is one overview callout.
@@ -117,7 +117,7 @@ func (s *Server) apiArtifacts(t target, r *http.Request) (any, error) {
 		}
 		rows = append(rows, ArtifactRow{Artifact: a, Format: k.Format, Stage: k.Stage, Lint: len(f), Findings: f})
 	}
-	return map[string]any{"kinds": artifacts.Names(), "statuses": artifacts.Statuses, "artifacts": rows}, nil
+	return map[string]any{"kinds": artifacts.Names(), "statuses": artifacts.Statuses(), "artifacts": rows}, nil
 }
 
 func (s *Server) apiArtifact(t target, r *http.Request) (any, error) {

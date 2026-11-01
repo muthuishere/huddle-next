@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/muthuishere/huddle-next/internal/artifacts"
+	"github.com/muthuishere/huddle-next/artifacts"
 )
 
 // The repo huddle is actually installed into: a hand-written CLAUDE.md, no
