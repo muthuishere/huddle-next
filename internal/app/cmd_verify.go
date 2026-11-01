@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/muthuishere/huddle-next/internal/artifacts"
+	"github.com/muthuishere/huddle-next/artifacts"
 	"github.com/muthuishere/huddle-next/internal/gates"
 	"github.com/muthuishere/huddle-next/internal/output"
 )

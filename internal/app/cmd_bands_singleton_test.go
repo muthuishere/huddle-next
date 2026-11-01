@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/muthuishere/huddle-next/internal/artifacts"
+	"github.com/muthuishere/huddle-next/artifacts"
 )
 
 // bands.yaml is one per repo by design (ADR 12 §5, ADR 18): it configures one

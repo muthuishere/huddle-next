@@ -1,11 +1,15 @@
-// Package autonomous holds the deterministic substrate for Autonomous Decider
-// Mode: the session structure, the 5-whys depth rules, the owner-weighted
-// decision math, the owner-level fork policy and the verdict writer.
+// Package room holds the deterministic substrate for a huddle room — the
+// session structure, the 5-whys depth rules, the owner-weighted decision math,
+// the owner-level fork policy and the verdict writer. It backs the CLI's
+// `huddle autonomous` verbs, and it is the package an embedding host drives
+// directly.
 //
-// The skill is declarative and the binary is deterministic: an agent supplies
-// the persona reasoning (stances, why-chains, votes), this package owns the
-// shape and the arithmetic. Nothing here calls a model or touches the network.
-package autonomous
+// The caller is declarative and this package is deterministic: the caller
+// supplies the persona reasoning (stances, why-chains, votes) from whatever
+// model it likes, this package owns the shape and the arithmetic. Nothing here
+// calls a model or touches the network — that boundary is the point, and it is
+// what makes the room embeddable.
+package room
 
 import (
 	"errors"

@@ -1,4 +1,4 @@
-package autonomous
+package room
 
 import (
 	"errors"

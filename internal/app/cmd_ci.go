@@ -3,7 +3,7 @@ package app
 import (
 	"fmt"
 
-	"github.com/muthuishere/huddle-next/internal/artifacts"
+	"github.com/muthuishere/huddle-next/artifacts"
 )
 
 func init() {

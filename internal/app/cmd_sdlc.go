@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/muthuishere/huddle-next/internal/artifacts"
+	"github.com/muthuishere/huddle-next/artifacts"
 	"github.com/muthuishere/huddle-next/internal/output"
 	"github.com/muthuishere/huddle-next/internal/sdlc"
 	"github.com/muthuishere/huddle-next/internal/specframework"

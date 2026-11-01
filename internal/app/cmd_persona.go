@@ -11,7 +11,7 @@ import (
 
 	"github.com/muthuishere/huddle-next/internal/eventlog"
 	"github.com/muthuishere/huddle-next/internal/output"
-	"github.com/muthuishere/huddle-next/internal/personas"
+	"github.com/muthuishere/huddle-next/personas"
 )
 
 func init() {

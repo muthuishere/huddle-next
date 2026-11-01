@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/muthuishere/huddle-next/internal/artifacts"
-	"github.com/muthuishere/huddle-next/internal/autonomous"
+	"github.com/muthuishere/huddle-next/artifacts"
 	"github.com/muthuishere/huddle-next/internal/eventlog"
 	"github.com/muthuishere/huddle-next/internal/output"
 	"github.com/muthuishere/huddle-next/internal/paths"
 	"github.com/muthuishere/huddle-next/internal/repo"
+	"github.com/muthuishere/huddle-next/room"
 )
 
 func init() {
@@ -36,14 +36,14 @@ owner-weighted decision math and the verdict. Owner-level forks still escalate.
 
 Verbs:
   new --question "Q" --personas a,b,c [--owner ` + DefaultOwner + `] [--rounds 3] [--id <sid>] [--dry-run]
-        open a room: >= 2 personas, the owner among them, rounds ` + strconv.Itoa(autonomous.MinRounds) + `..` + strconv.Itoa(autonomous.MaxRounds) + `
+        open a room: >= 2 personas, the owner among them, rounds ` + strconv.Itoa(room.MinRounds) + `..` + strconv.Itoa(room.MaxRounds) + `
   turn <sid> --round N --persona <id> --why "first; deeper; root" [--stance "one line"]
-        record one 5-whys turn; >= ` + strconv.Itoa(autonomous.MinWhys) + ` steps, in round order, never shallower than before
+        record one 5-whys turn; >= ` + strconv.Itoa(room.MinWhys) + ` steps, in round order, never shallower than before
   trail <sid>                              the rationale trail so far, by round
   vote <sid> --persona <id> --position "<option>" --confidence 0..1 [--reason "why"]
   tally <sid>                              resolve through the owner's lens (no side effects)
   fork-check --decision "<text>" [--flags launch,spend,...]
-        owner-level fork policy: ` + strings.Join(autonomous.ForkFlagNames(), ", ") + `
+        owner-level fork policy: ` + strings.Join(room.ForkFlagNames(), ", ") + `
   verdict <sid> --decision "<text>" [--flags ...] [--summary "<one line>"] [--dry-run]
         write verdict.json + verdict.md; status decided (act) or escalated (stage)
   list | show <sid>                        sessions and one session's manifest
@@ -104,7 +104,7 @@ func autoNew(c *Ctx, args []string) error {
 	if a.bools["help"] {
 		return coreHelp(c, autonomousHelp)
 	}
-	rounds, err := a.intValue("rounds", autonomous.MinRounds)
+	rounds, err := a.intValue("rounds", room.MinRounds)
 	if err != nil {
 		return err
 	}
@@ -131,7 +131,7 @@ func autoNew(c *Ctx, args []string) error {
 	if id == "" {
 		id = time.Now().UTC().Format("20060102T150405") + "-" + artifacts.Slugify(question)
 	}
-	s, err := autonomous.New(autonomous.Options{
+	s, err := room.New(room.Options{
 		ID: paths.SafeName(id), Question: question, Owner: owner,
 		Personas: personas, Rounds: rounds, Branch: info.Branch, Now: time.Now(),
 	})
@@ -144,9 +144,9 @@ func autoNew(c *Ctx, args []string) error {
 		"dryRun": a.bools["dry-run"],
 	}
 	if !a.bools["dry-run"] {
-		dir, err := autonomous.Create(root, s)
+		dir, err := room.Create(root, s)
 		if err != nil {
-			if errors.Is(err, autonomous.ErrExists) {
+			if errors.Is(err, room.ErrExists) {
 				return fmt.Errorf("%w — pick another --id; a room is never silently reset", err)
 			}
 			return err
@@ -194,7 +194,7 @@ func autoTurn(c *Ctx, args []string) error {
 	if err != nil {
 		return err
 	}
-	s, err := autonomous.Load(root, id)
+	s, err := room.Load(root, id)
 	if err != nil {
 		return err
 	}
@@ -202,7 +202,7 @@ func autoTurn(c *Ctx, args []string) error {
 	if err != nil {
 		return err
 	}
-	if err := autonomous.Save(root, s); err != nil {
+	if err := room.Save(root, s); err != nil {
 		return err
 	}
 	done := fmt.Sprintf("%d/%d", len(s.Turns), s.Rounds*len(s.Personas))
@@ -230,7 +230,7 @@ func autoTrail(c *Ctx, args []string) error {
 	if err != nil {
 		return err
 	}
-	s, err := autonomous.Load(root, id)
+	s, err := room.Load(root, id)
 	if err != nil {
 		return err
 	}
@@ -273,7 +273,7 @@ func autoVote(c *Ctx, args []string) error {
 	if err != nil {
 		return err
 	}
-	s, err := autonomous.Load(root, id)
+	s, err := room.Load(root, id)
 	if err != nil {
 		return err
 	}
@@ -281,7 +281,7 @@ func autoVote(c *Ctx, args []string) error {
 	if err != nil {
 		return err
 	}
-	if err := autonomous.Save(root, s); err != nil {
+	if err := room.Save(root, s); err != nil {
 		return err
 	}
 	if a.bools["json"] {
@@ -309,11 +309,11 @@ func autoTally(c *Ctx, args []string) error {
 	if err != nil {
 		return err
 	}
-	s, err := autonomous.Load(root, id)
+	s, err := room.Load(root, id)
 	if err != nil {
 		return err
 	}
-	res, err := autonomous.Resolve(s.Votes, s.Owner)
+	res, err := room.Resolve(s.Votes, s.Owner)
 	if err != nil {
 		return err
 	}
@@ -348,7 +348,7 @@ func autoForkCheck(c *Ctx, args []string) error {
 	if decision == "" {
 		return Usagef(`huddle autonomous fork-check --decision "<text>" [--flags launch,spend]`)
 	}
-	f := autonomous.ForkCheck(decision, coreSplitCSV(a.values["flags"]))
+	f := room.ForkCheck(decision, coreSplitCSV(a.values["flags"]))
 	if a.bools["json"] {
 		return output.JSON(c.Stdout, f)
 	}
@@ -357,7 +357,7 @@ func autoForkCheck(c *Ctx, args []string) error {
 		fmt.Fprintln(c.Stdout, "REASON: "+r)
 	}
 	if len(f.Unknown) > 0 {
-		fmt.Fprintf(c.Stdout, "UNKNOWN FLAGS: %s (known: %s)\n", strings.Join(f.Unknown, ", "), strings.Join(autonomous.ForkFlagNames(), ", "))
+		fmt.Fprintf(c.Stdout, "UNKNOWN FLAGS: %s (known: %s)\n", strings.Join(f.Unknown, ", "), strings.Join(room.ForkFlagNames(), ", "))
 	}
 	return nil
 }
@@ -379,19 +379,19 @@ func autoVerdict(c *Ctx, args []string) error {
 	if err != nil {
 		return err
 	}
-	s, err := autonomous.Load(root, id)
+	s, err := room.Load(root, id)
 	if err != nil {
 		return err
 	}
-	v, err := autonomous.BuildVerdict(s, a.values["decision"], a.values["summary"], coreSplitCSV(a.values["flags"]), time.Now())
+	v, err := room.BuildVerdict(s, a.values["decision"], a.values["summary"], coreSplitCSV(a.values["flags"]), time.Now())
 	if err != nil {
 		return err
 	}
 	out := map[string]any{"verdict": v, "dryRun": a.bools["dry-run"]}
 	if !a.bools["dry-run"] {
-		path, err := autonomous.WriteVerdict(root, s, v)
+		path, err := room.WriteVerdict(root, s, v)
 		if err != nil {
-			if errors.Is(err, autonomous.ErrExists) {
+			if errors.Is(err, room.ErrExists) {
 				return fmt.Errorf("%w — a verdict is written once; open a new session to decide again", err)
 			}
 			return err
@@ -424,7 +424,7 @@ func autoVerdict(c *Ctx, args []string) error {
 		}
 	}
 	if a.bools["dry-run"] {
-		fmt.Fprintf(c.Stdout, "DRY RUN: nothing written — rerun without --dry-run\n\n%s", autonomous.Markdown(v))
+		fmt.Fprintf(c.Stdout, "DRY RUN: nothing written — rerun without --dry-run\n\n%s", room.Markdown(v))
 	} else {
 		output.KV(c.Stdout, "VERDICT", out["path"].(string), "EVENT", out["event"].(string))
 	}
@@ -443,13 +443,13 @@ func autoList(c *Ctx, args []string) error {
 	if err != nil {
 		return err
 	}
-	sessions, err := autonomous.List(root)
+	sessions, err := room.List(root)
 	if err != nil {
 		return err
 	}
 	if a.bools["json"] {
 		if sessions == nil {
-			sessions = []autonomous.Session{}
+			sessions = []room.Session{}
 		}
 		return output.JSON(c.Stdout, sessions)
 	}
@@ -481,7 +481,7 @@ func autoShow(c *Ctx, args []string) error {
 	if err != nil {
 		return err
 	}
-	s, err := autonomous.Load(root, id)
+	s, err := room.Load(root, id)
 	if err != nil {
 		return err
 	}

@@ -1,5 +1,5 @@
 // Package assets embeds built-in personas and artifact templates.
-// personas → internal/personas, templates → internal/artifacts.
+// personas → the personas package, templates → the artifacts package.
 // The skill family lives in the top-level skills package.
 package assets
 

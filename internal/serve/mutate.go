@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/muthuishere/huddle-next/internal/artifacts"
+	"github.com/muthuishere/huddle-next/artifacts"
 	"github.com/muthuishere/huddle-next/internal/eventlog"
 	"github.com/muthuishere/huddle-next/internal/hooks"
 	"github.com/muthuishere/huddle-next/internal/redact"

@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/muthuishere/huddle-next/internal/artifacts"
+	"github.com/muthuishere/huddle-next/artifacts"
 )
 
 // Tiers, in increasing severity.

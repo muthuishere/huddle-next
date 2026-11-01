@@ -17,7 +17,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/muthuishere/huddle-next/internal/artifacts"
+	"github.com/muthuishere/huddle-next/artifacts"
 	"github.com/muthuishere/huddle-next/internal/hooks"
 	"github.com/muthuishere/huddle-next/internal/repo"
 	"github.com/muthuishere/huddle-next/web"
