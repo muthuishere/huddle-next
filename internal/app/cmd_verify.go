@@ -7,6 +7,7 @@ import (
 	"github.com/muthuishere/huddle-next/artifacts"
 	"github.com/muthuishere/huddle-next/internal/gates"
 	"github.com/muthuishere/huddle-next/internal/output"
+	"github.com/muthuishere/huddle-next/internal/record"
 )
 
 func init() {
@@ -49,7 +50,7 @@ func verifyRecord(c *Ctx, args []string) error {
 	}
 	v, err := gates.Record(env.Repo.Root, env, gates.RecordOptions{
 		Ref: a.Pos[0], Verdict: a.Flags["verdict"], FindingsFile: a.Flags["findings"],
-		EvalStatus: a.Flags["eval-status"], By: artifacts.CurrentUser(env.Cfg),
+		EvalStatus: a.Flags["eval-status"], By: record.CurrentUser(env.Cfg),
 	})
 	if err != nil {
 		return err

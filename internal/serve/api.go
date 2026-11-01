@@ -117,7 +117,7 @@ func (s *Server) apiArtifacts(t target, r *http.Request) (any, error) {
 		}
 		rows = append(rows, ArtifactRow{Artifact: a, Format: k.Format, Stage: k.Stage, Lint: len(f), Findings: f})
 	}
-	return map[string]any{"kinds": artifacts.Names(), "statuses": artifacts.Statuses, "artifacts": rows}, nil
+	return map[string]any{"kinds": artifacts.Names(), "statuses": artifacts.Statuses(), "artifacts": rows}, nil
 }
 
 func (s *Server) apiArtifact(t target, r *http.Request) (any, error) {

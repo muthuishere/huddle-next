@@ -10,6 +10,7 @@ import (
 	"github.com/muthuishere/huddle-next/artifacts"
 	"github.com/muthuishere/huddle-next/internal/config"
 	"github.com/muthuishere/huddle-next/internal/output"
+	"github.com/muthuishere/huddle-next/internal/record"
 )
 
 func init() {
@@ -82,7 +83,7 @@ func guardrailsAdopt(c *Ctx, args []string) error {
 	}
 	author := a.Flags["author"]
 	if author == "" {
-		author = artifacts.CurrentUser(env.Cfg)
+		author = record.CurrentUser(env.Cfg)
 	}
 	tpl, err := artifacts.Render(env.Repo.Root, env.Cfg, "guardrails", artifacts.NewOptions{Author: author})
 	if err != nil {
@@ -165,7 +166,7 @@ func guardrailsAdopt(c *Ctx, args []string) error {
 	if err != nil {
 		return err
 	}
-	ev, res, err := artifacts.RecordWrite(env, x.ID, x.Kind, rel, x.SHA256, author, "adopt")
+	ev, res, err := record.RecordWrite(env, x.ID, x.Kind, rel, x.SHA256, author, "adopt")
 	if err != nil {
 		return err
 	}

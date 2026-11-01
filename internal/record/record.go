@@ -1,4 +1,12 @@
-package artifacts
+// Package record is the CLI's audit wiring for an artifact write: it appends
+// the artifact.written event and fires the artifact.written hooks.
+//
+// It lives in internal/ on purpose. Env carries repo.Info, config.Config and a
+// hooks callback, none of which an embedding host can name or construct, so
+// exporting it from the artifacts package offered a surface nobody outside
+// this module could use. A host embeds artifacts for render/create/lint and
+// emits its own events.
+package record
 
 import (
 	"os"

@@ -11,10 +11,11 @@ import (
 	"github.com/muthuishere/huddle-next/internal/config"
 	"github.com/muthuishere/huddle-next/internal/hooks"
 	"github.com/muthuishere/huddle-next/internal/output"
+	"github.com/muthuishere/huddle-next/internal/record"
 )
 
 // artFire runs hooks for artifact writes and gates; tests swap it.
-var artFire artifacts.FireFunc = hooks.Fire
+var artFire record.FireFunc = hooks.Fire
 
 func init() {
 	// guardrails and bands have extra verbs and register themselves in their own
@@ -29,16 +30,16 @@ func init() {
 }
 
 // artEnv loads repo + merged config once for an artifact command.
-func artEnv(c *Ctx) (artifacts.Env, error) {
+func artEnv(c *Ctx) (record.Env, error) {
 	info, err := c.Repo()
 	if err != nil {
-		return artifacts.Env{}, err
+		return record.Env{}, err
 	}
 	cfg, err := config.Load(info.Root)
 	if err != nil {
-		return artifacts.Env{}, err
+		return record.Env{}, err
 	}
-	return artifacts.Env{Repo: info, Cfg: cfg, Fire: artFire}, nil
+	return record.Env{Repo: info, Cfg: cfg, Fire: artFire}, nil
 }
 
 func artNounHelp(w io.Writer, noun string) {
@@ -111,7 +112,7 @@ func artNew(c *Ctx, noun string, args []string) error {
 	}
 	author := a.Flags["author"]
 	if author == "" {
-		author = artifacts.CurrentUser(env.Cfg)
+		author = record.CurrentUser(env.Cfg)
 	}
 	title := strings.Join(a.Pos, " ")
 	d, err := artifacts.Render(env.Repo.Root, env.Cfg, noun, artifacts.NewOptions{Author: author, Title: title})
@@ -180,7 +181,7 @@ func artNew(c *Ctx, noun string, args []string) error {
 	if err := artifacts.Create(env.Repo.Root, d); err != nil {
 		return err
 	}
-	ev, res, err := artifacts.RecordWrite(env, d.ID, d.Kind, d.Path, d.SHA256, author, "new")
+	ev, res, err := record.RecordWrite(env, d.ID, d.Kind, d.Path, d.SHA256, author, "new")
 	if err != nil {
 		return err
 	}
@@ -198,7 +199,7 @@ func artNew(c *Ctx, noun string, args []string) error {
 	return nil
 }
 
-func artStatusOf(env artifacts.Env, noun, path string) string {
+func artStatusOf(env record.Env, noun, path string) string {
 	k, _ := artifacts.Get(env.Cfg, noun)
 	if a, err := artifacts.Load(env.Repo.Root, k, path); err == nil && a.Status != "" {
 		return a.Status
@@ -391,7 +392,7 @@ func artSupersede(c *Ctx, noun string, args []string) error {
 	if repl.Path == old.Path {
 		return errors.New("an artifact cannot supersede itself")
 	}
-	by := artifacts.CurrentUser(env.Cfg)
+	by := record.CurrentUser(env.Cfg)
 	old, err = artifacts.UpdateFrontMatter(env.Repo.Root, env.Cfg, old, func(fm *artifacts.FrontMatter) {
 		fm.Set("status", "superseded")
 		fm.Set("supersededBy", repl.ID)
@@ -399,7 +400,7 @@ func artSupersede(c *Ctx, noun string, args []string) error {
 	if err != nil {
 		return err
 	}
-	if _, _, err := artifacts.RecordWrite(env, old.ID, old.Kind, old.Path, old.SHA256, by, "supersede"); err != nil {
+	if _, _, err := record.RecordWrite(env, old.ID, old.Kind, old.Path, old.SHA256, by, "supersede"); err != nil {
 		return err
 	}
 	repl, err = artifacts.UpdateFrontMatter(env.Repo.Root, env.Cfg, repl, func(fm *artifacts.FrontMatter) {
@@ -408,7 +409,7 @@ func artSupersede(c *Ctx, noun string, args []string) error {
 	if err != nil {
 		return err
 	}
-	if _, _, err := artifacts.RecordWrite(env, repl.ID, repl.Kind, repl.Path, repl.SHA256, by, "link"); err != nil {
+	if _, _, err := record.RecordWrite(env, repl.ID, repl.Kind, repl.Path, repl.SHA256, by, "link"); err != nil {
 		return err
 	}
 	if a.Bools["json"] {
@@ -451,7 +452,7 @@ func artLink(c *Ctx, noun string, args []string) error {
 	if err != nil {
 		return err
 	}
-	if _, _, err := artifacts.RecordWrite(env, x.ID, x.Kind, x.Path, x.SHA256, artifacts.CurrentUser(env.Cfg), "link"); err != nil {
+	if _, _, err := record.RecordWrite(env, x.ID, x.Kind, x.Path, x.SHA256, record.CurrentUser(env.Cfg), "link"); err != nil {
 		return err
 	}
 	if a.Bools["json"] {

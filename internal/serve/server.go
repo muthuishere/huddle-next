@@ -17,8 +17,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/muthuishere/huddle-next/artifacts"
 	"github.com/muthuishere/huddle-next/internal/hooks"
+	"github.com/muthuishere/huddle-next/internal/record"
 	"github.com/muthuishere/huddle-next/internal/repo"
 	"github.com/muthuishere/huddle-next/web"
 )
@@ -33,7 +33,7 @@ const By = "serve"
 type Options struct {
 	Repo  repo.Info // the repo the dashboard opens on
 	Token string    // mutation token; generated when empty
-	Fire  artifacts.FireFunc
+	Fire  record.FireFunc
 	// CacheTTL for GET responses; 0 means the 2s default, negative disables.
 	CacheTTL time.Duration
 	Now      func() time.Time
@@ -43,7 +43,7 @@ type Options struct {
 type Server struct {
 	repo   repo.Info
 	token  string
-	fire   artifacts.FireFunc
+	fire   record.FireFunc
 	now    func() time.Time
 	cache  *cache
 	mux    *http.ServeMux

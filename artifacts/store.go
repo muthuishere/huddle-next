@@ -38,8 +38,17 @@ type Artifact struct {
 	Raw   []byte      `json:"-"`
 }
 
-// Statuses allowed in front matter.
-var Statuses = []string{"draft", "proposed", "approved", "superseded"}
+// statuses allowed in front matter. Unexported and copied out by Statuses:
+// an exported slice is mutable by every importer, and this one decides what
+// `status:` values lint accepts.
+//
+// Note what this does NOT do: nothing in this package consults gates, so a
+// caller (or a hand edit) can still move an artifact to "approved" without an
+// approval. Statuses is the vocabulary, never the authority.
+var statuses = []string{"draft", "proposed", "approved", "superseded"}
+
+// Statuses returns the front-matter status vocabulary, in order.
+func Statuses() []string { return append([]string(nil), statuses...) }
 
 // SHA256 hashes content as lowercase hex.
 func SHA256(b []byte) string {

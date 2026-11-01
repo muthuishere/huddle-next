@@ -11,6 +11,7 @@ import (
 	"github.com/muthuishere/huddle-next/artifacts"
 	"github.com/muthuishere/huddle-next/internal/config"
 	"github.com/muthuishere/huddle-next/internal/output"
+	"github.com/muthuishere/huddle-next/internal/record"
 )
 
 func init() {
@@ -98,7 +99,7 @@ func ciBranch(b string) string {
 }
 
 // ciEmit prints a workflow draft, or writes it with --write (never overwrites).
-func ciEmit(c *Ctx, env artifacts.Env, name, out string, vars map[string]string, write, asJSON bool, warn string) error {
+func ciEmit(c *Ctx, env record.Env, name, out string, vars map[string]string, write, asJSON bool, warn string) error {
 	content, err := artifacts.RenderCI(name, vars)
 	if err != nil {
 		return err
@@ -120,7 +121,7 @@ func ciEmit(c *Ctx, env artifacts.Env, name, out string, vars map[string]string,
 			}
 			return err
 		}
-		if _, _, err := artifacts.RecordWrite(env, d.ID, "ci", d.Path, d.SHA256, artifacts.CurrentUser(env.Cfg), "draft"); err != nil {
+		if _, _, err := record.RecordWrite(env, d.ID, "ci", d.Path, d.SHA256, record.CurrentUser(env.Cfg), "draft"); err != nil {
 			return err
 		}
 		written = true

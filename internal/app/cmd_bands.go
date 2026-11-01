@@ -13,6 +13,7 @@ import (
 	"github.com/muthuishere/huddle-next/internal/config"
 	"github.com/muthuishere/huddle-next/internal/eventlog"
 	"github.com/muthuishere/huddle-next/internal/output"
+	"github.com/muthuishere/huddle-next/internal/record"
 	"github.com/muthuishere/huddle-next/internal/redact"
 )
 
@@ -124,7 +125,7 @@ func bandsCheck(c *Ctx, args []string) error {
 	var ev eventlog.Event
 	if res.Tier != bands.TierOK {
 		ev, err = eventlog.Append(env.Repo.Name, eventlog.Event{
-			Type: "bands." + res.Tier, By: artifacts.CurrentUser(env.Cfg), Branch: env.Repo.Branch,
+			Type: "bands." + res.Tier, By: record.CurrentUser(env.Cfg), Branch: env.Repo.Branch,
 			Text: fmt.Sprintf("%s at %.2fσ (%s)", res.Metric, res.Sigma, res.Tier),
 			Data: map[string]any{"metric": res.Metric, "latest": res.Latest, "mean": res.Mean, "stddev": res.StdDev, "sigma": res.Sigma, "tier": res.Tier},
 		})
@@ -138,7 +139,7 @@ func bandsCheck(c *Ctx, args []string) error {
 	if res.Tier == bands.TierBreach {
 		now, _ := time.Parse("2006-01-02", date)
 		slug := artifacts.Slugify(res.Metric) + "-breach-" + date
-		author := artifacts.CurrentUser(env.Cfg)
+		author := record.CurrentUser(env.Cfg)
 		d, err := artifacts.Render(env.Repo.Root, env.Cfg, "intent", artifacts.NewOptions{Author: author, Title: slug, Now: now})
 		if err != nil {
 			return err
@@ -152,7 +153,7 @@ func bandsCheck(c *Ctx, args []string) error {
 				return err
 			} else if err == nil {
 				written = true
-				if _, _, err := artifacts.RecordWrite(env, d.ID, d.Kind, d.Path, d.SHA256, author, "bands.breach"); err != nil {
+				if _, _, err := record.RecordWrite(env, d.ID, d.Kind, d.Path, d.SHA256, author, "bands.breach"); err != nil {
 					return err
 				}
 			} else {
@@ -230,7 +231,7 @@ func bandsDismiss(c *Ctx, args []string) error {
 		return fmt.Errorf("no band signal %q — find it with: huddle log list", a.Pos[0])
 	}
 	ev, err := eventlog.Append(env.Repo.Name, eventlog.Event{
-		Type: "bands.dismissed", By: artifacts.CurrentUser(env.Cfg), Branch: env.Repo.Branch,
+		Type: "bands.dismissed", By: record.CurrentUser(env.Cfg), Branch: env.Repo.Branch,
 		Text: redact.String(reason), Refs: []string{target.ID},
 		Data: map[string]any{"dismissed": target.ID, "tier": target.Data["tier"], "metric": target.Data["metric"]},
 	})

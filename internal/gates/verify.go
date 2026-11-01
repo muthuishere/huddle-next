@@ -16,6 +16,7 @@ import (
 	"github.com/muthuishere/huddle-next/artifacts"
 	"github.com/muthuishere/huddle-next/internal/config"
 	"github.com/muthuishere/huddle-next/internal/eventlog"
+	"github.com/muthuishere/huddle-next/internal/record"
 	"github.com/muthuishere/huddle-next/internal/redact"
 	"github.com/muthuishere/huddle-next/internal/repo"
 )
@@ -168,7 +169,7 @@ type RecordOptions struct {
 // Record stamps a verdict with the tree fingerprint. When the eval runner was
 // blocked or unverified, PASS is forced down to CONCERNS: nothing unverified
 // can pass.
-func Record(root string, env artifacts.Env, o RecordOptions) (Verdict, error) {
+func Record(root string, env record.Env, o RecordOptions) (Verdict, error) {
 	verdict := strings.ToUpper(strings.TrimSpace(o.Verdict))
 	switch verdict {
 	case PASS, CONCERNS, FAIL:

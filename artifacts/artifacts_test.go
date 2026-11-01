@@ -52,3 +52,17 @@ func TestSlugify(t *testing.T) {
 		t.Fatal(got)
 	}
 }
+
+// Statuses hands out a copy. It used to be an exported slice, which meant any
+// importer — including an embedding host — could rewrite the vocabulary that
+// lint validates `status:` against, for the whole process.
+func TestStatusesCannotBeMutatedByCallers(t *testing.T) {
+	got := Statuses()
+	if len(got) == 0 {
+		t.Fatal("no statuses")
+	}
+	got[0] = "whatever"
+	if again := Statuses(); again[0] == "whatever" {
+		t.Fatal("mutating the returned slice changed the package's own vocabulary")
+	}
+}

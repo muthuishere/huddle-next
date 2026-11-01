@@ -12,16 +12,17 @@ import (
 	"github.com/muthuishere/huddle-next/artifacts"
 	"github.com/muthuishere/huddle-next/internal/eventlog"
 	"github.com/muthuishere/huddle-next/internal/hooks"
+	"github.com/muthuishere/huddle-next/internal/record"
 	"github.com/muthuishere/huddle-next/internal/redact"
 )
 
 // env builds the audit bundle artifact writes need.
-func (s *Server) env(t target) (artifacts.Env, error) {
+func (s *Server) env(t target) (record.Env, error) {
 	cfg, err := t.config()
 	if err != nil {
-		return artifacts.Env{}, err
+		return record.Env{}, err
 	}
-	return artifacts.Env{Repo: t.info, Cfg: cfg, Fire: s.fire}, nil
+	return record.Env{Repo: t.info, Cfg: cfg, Fire: s.fire}, nil
 }
 
 type artifactNewReq struct {
@@ -47,7 +48,7 @@ func (s *Server) postArtifactNew(t target, r *http.Request, body []byte) (any, e
 	if _, ok := artifacts.Get(env.Cfg, req.Kind); !ok {
 		return nil, errStatus(http.StatusBadRequest, "unknown kind "+req.Kind+" — kinds: "+strings.Join(artifacts.Names(), ", "))
 	}
-	author := artifacts.CurrentUser(env.Cfg)
+	author := record.CurrentUser(env.Cfg)
 	d, err := artifacts.Render(t.info.Root, env.Cfg, req.Kind, artifacts.NewOptions{
 		Author: author,
 		Title:  redact.String(strings.TrimSpace(req.Title)),
@@ -65,7 +66,7 @@ func (s *Server) postArtifactNew(t target, r *http.Request, body []byte) (any, e
 		}
 		return nil, err
 	}
-	ev, res, err := artifacts.RecordWrite(env, d.ID, d.Kind, d.Path, d.SHA256, By, "new")
+	ev, res, err := record.RecordWrite(env, d.ID, d.Kind, d.Path, d.SHA256, By, "new")
 	if err != nil {
 		return nil, err
 	}

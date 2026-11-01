@@ -17,6 +17,7 @@ import (
 	"github.com/muthuishere/huddle-next/internal/config"
 	"github.com/muthuishere/huddle-next/internal/eventlog"
 	"github.com/muthuishere/huddle-next/internal/hooks"
+	"github.com/muthuishere/huddle-next/internal/record"
 	"github.com/muthuishere/huddle-next/internal/redact"
 )
 
@@ -202,7 +203,7 @@ func IsOwner(cfg config.Config, role, person string) bool {
 // Deps are the collaborators a gate decision needs.
 type Deps struct {
 	Root string
-	Env  artifacts.Env
+	Env  record.Env
 }
 
 // Request opens a gate for an artifact. name labels the gate (deploy,
@@ -350,7 +351,7 @@ func Decide(d Deps, o DecideOptions) (Gate, error) {
 	if err != nil {
 		return *g, err
 	}
-	if _, _, err := artifacts.RecordWrite(d.Env, updated.ID, updated.Kind, updated.Path, updated.SHA256, who, "gate.approve"); err != nil {
+	if _, _, err := record.RecordWrite(d.Env, updated.ID, updated.Kind, updated.Path, updated.SHA256, who, "gate.approve"); err != nil {
 		return *g, err
 	}
 	ev, err := eventlog.Append(d.Env.Repo.Name, eventlog.Event{
