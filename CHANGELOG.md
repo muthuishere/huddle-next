@@ -6,11 +6,39 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
-Nothing released yet. Everything below is the content of the first release, which is prepared but
-**not tagged and not published** — no `v*` tag exists, so no npm package, cask, `.deb`, `.rpm` or
-winget manifest is live. `docs/packaging.md` lists the one-time setup the owner has to do first.
+### Fixed
 
-## [0.1.0] — unreleased
+- **A path that leaves the repo is no longer reported as inside it.**
+  `internal/specframework.rel()` checked containment only on its absolute branch; the relative
+  branch returned `filepath.Clean(p)`, and `Clean` keeps a leading `..`, so `../../etc/passwd`
+  came back unchanged and was listed as a path belonging to the change. Verified on darwin, so it
+  was never Windows-specific — Windows only exposed it, because there a rooted path with no drive
+  letter is not `filepath.IsAbs` and took the same branch. `rel` is reached only from the
+  human-invoked `Changes` path and leaks a path string rather than file contents. Regression test
+  fails on the old code on every platform.
+- The windows-latest test job passes again. Besides the above, `TestChangesStubbed` was a fixture
+  bug: it interpolated the repo root into a JSON string literal, where Windows backslashes are
+  JSON escapes, so the document did not parse and `Changes` returned nothing.
+
+## [0.1.0] — 2026-11-01
+
+Tagged and published: <https://github.com/muthuishere/huddle-next/releases/tag/v0.1.0>.
+
+**What that release actually delivers**, because one tag was meant to drive every channel and
+does not yet:
+
+- **Live.** The GitHub Release carries darwin, linux and windows binaries on amd64 and arm64,
+  plus `.deb` and `.rpm` for both linux arches and `checksums.txt` — 11 assets. `go get
+  github.com/muthuishere/huddle-next@v0.1.0` resolves through proxy.golang.org. The repo is
+  public under MIT.
+- **Not live: npm.** The `npm publish` workflow for this tag failed — `npm error code E404` on
+  `PUT /@muthuishere%2fhuddle-darwin-arm64`, because npm trusted publishing has not been
+  bootstrapped per package (`docs/packaging.md`). No `@muthuishere/huddle` exists on the
+  registry.
+- **Not live: Homebrew and winget.** Both are wired in `.goreleaser.yaml` and skipped for want
+  of `HOMEBREW_TAP_GITHUB_TOKEN` and `WINGET_GITHUB_TOKEN`.
+- **CI is not green on every platform.** lint, ubuntu-latest, macos-latest and the goreleaser
+  build pass; the windows-latest test job fails. See "Known gaps" below.
 
 First release of the Go CLI and the skill family. Scope is
 [ADR 19](docs/adr/19-v1-scope-and-value-gate.md); anything an ADR describes but ADR 19 defers is
@@ -98,6 +126,20 @@ not in this release.
 
 ### Known gaps in 0.1.0
 
+- **The gate records approvals; it does not enforce them.** Nothing in the `artifacts` package
+  consults `internal/gates`, so `status: approved` can be written through `Create` / `Render` /
+  `UpdateFrontMatter` with no approval behind it. `gate approve` keeps separation of duties and
+  still refuses an agent session, so the *gate* is sound — it is simply not on the write path.
+- **The windows-latest test job fails** (fixed after the tag — see [Unreleased]). Two tests in
+  `internal/specframework`:
+  `TestChangesStubbed` (a fixture that interpolates the repo root into a JSON string literal,
+  where Windows backslashes are JSON escapes) and
+  `TestRelAcceptsSymlinkedRootAndStillRejectsEscapes` (a rooted path with no drive letter is not
+  `filepath.IsAbs` on Windows, so it took the relative branch and was echoed back). Windows
+  binaries ship regardless.
+- **An unfilled template lints clean.** `artifacts.Lint` has no emptiness check, so an untouched
+  ADR template reports no findings. Pinned by `artifacts/example_test.go` so it cannot change
+  silently.
 - `huddle <noun> show --graph` (ADR 18 §B10) is not implemented.
 - ADR 14 §6's review lenses are skill prose, not CLI-served data, and findings have no canonical
   JSON shape; §7's guardrails refresh ledger is not built; §11's embedded `removals` list and
