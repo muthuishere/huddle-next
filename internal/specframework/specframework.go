@@ -246,12 +246,28 @@ func (c *Client) rel(p string) string {
 	if p == "" {
 		return ""
 	}
-	if !filepath.IsAbs(p) {
-		return filepath.ToSlash(filepath.Clean(p))
-	}
 	root, err := filepath.Abs(c.Root)
 	if err != nil {
 		return ""
+	}
+	if !filepath.IsAbs(p) {
+		// "Relative" is not the same as "inside", and this branch used to
+		// assume it was: it returned filepath.Clean(p) as a repo-relative
+		// path. Clean keeps a leading "..", so "../../etc/passwd" came back
+		// unchanged and was shown as if it sat in the repo. On Windows it was
+		// worse — a rooted path with no drive letter ("/etc/passwd", "\\x")
+		// is not IsAbs, so absolute escapes arrived here too and were handed
+		// straight back. Reject the two shapes that cannot be repo-relative,
+		// then join to the root and use the one containment check rather than
+		// trusting the shape of the string.
+		if filepath.VolumeName(p) != "" || os.IsPathSeparator(p[0]) {
+			return ""
+		}
+		r, ok := within(root, filepath.Join(root, p))
+		if !ok {
+			return ""
+		}
+		return r
 	}
 	if r, ok := within(root, p); ok {
 		return r

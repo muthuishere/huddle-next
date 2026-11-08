@@ -83,6 +83,11 @@ func TestDetect(t *testing.T) {
 const listJSON = `{"changes":[{"name":"add-login"},{"name":"--oops"},{"name":"../escape"}],"root":{"path":"/x"}}`
 
 func statusJSON(root string) string {
+	// Slash form, always: root goes into a JSON string literal, and on Windows
+	// its backslashes are JSON escapes — "D:\a\huddle-next" made the whole
+	// document unparseable, Changes returned nothing, and the test read as a
+	// product failure. Go's filepath accepts forward slashes on Windows.
+	root = filepath.ToSlash(root)
 	return `{"changeName":"add-login","changeRoot":"` + root + `/openspec/changes/add-login",
 	"artifactPaths":{
 	  "proposal":{"outputPath":"proposal.md","resolvedOutputPath":"` + root + `/openspec/changes/add-login/proposal.md","existingOutputPaths":["` + root + `/openspec/changes/add-login/proposal.md"]},
@@ -293,5 +298,45 @@ func TestRelAcceptsSymlinkedRootAndStillRejectsEscapes(t *testing.T) {
 		if got := c.rel(p); got != "" {
 			t.Fatalf("rel(%q) = %q, want it dropped", p, got)
 		}
+	}
+}
+
+// A path the tool prints without a root used to be trusted for being relative:
+// rel returned filepath.Clean(p), which keeps a leading "..". So every one of
+// these escaped the repo and was reported as a path inside it, on every
+// platform — Windows only made it visible, because there a rooted path with no
+// drive letter is not IsAbs and reached the same branch.
+func TestRelRejectsRelativeEscapesAndRootedPaths(t *testing.T) {
+	root := t.TempDir()
+	c := &Client{Root: root}
+
+	for _, p := range []string{
+		"../../etc/passwd",
+		"../elsewhere.md",
+		"openspec/../../x.md",
+		"openspec/changes/../../../x.md",
+		"..",
+	} {
+		if got := c.rel(p); got != "" {
+			t.Errorf("rel(%q) = %q, want it dropped — it leaves the repo", p, got)
+		}
+	}
+
+	// Rooted but not IsAbs. This shape exists only on Windows, where a path
+	// with no drive letter is still rooted and so is not repo-relative; on Unix
+	// a backslash or a "C:" prefix is an ordinary character in a filename and
+	// such a path really is inside the repo, so there is nothing to reject.
+	if runtime.GOOS == "windows" {
+		for _, p := range []string{"/etc/passwd", `\windows\system32`, "C:relative"} {
+			if got := c.rel(p); got != "" {
+				t.Errorf("rel(%q) = %q, want it dropped — rooted paths are not repo-relative", p, got)
+			}
+		}
+	}
+
+	// A genuinely relative path inside the repo still works, and still comes
+	// back in slash form.
+	if got := c.rel(filepath.Join("openspec", "changes", "add-login", "proposal.md")); got != "openspec/changes/add-login/proposal.md" {
+		t.Errorf("relative path inside the repo = %q, want it kept", got)
 	}
 }
