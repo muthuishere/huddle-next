@@ -6,7 +6,19 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
-Nothing yet.
+### Fixed
+
+- **A path that leaves the repo is no longer reported as inside it.**
+  `internal/specframework.rel()` checked containment only on its absolute branch; the relative
+  branch returned `filepath.Clean(p)`, and `Clean` keeps a leading `..`, so `../../etc/passwd`
+  came back unchanged and was listed as a path belonging to the change. Verified on darwin, so it
+  was never Windows-specific — Windows only exposed it, because there a rooted path with no drive
+  letter is not `filepath.IsAbs` and took the same branch. `rel` is reached only from the
+  human-invoked `Changes` path and leaks a path string rather than file contents. Regression test
+  fails on the old code on every platform.
+- The windows-latest test job passes again. Besides the above, `TestChangesStubbed` was a fixture
+  bug: it interpolated the repo root into a JSON string literal, where Windows backslashes are
+  JSON escapes, so the document did not parse and `Changes` returned nothing.
 
 ## [0.1.0] — 2026-11-01
 
@@ -118,7 +130,8 @@ not in this release.
   consults `internal/gates`, so `status: approved` can be written through `Create` / `Render` /
   `UpdateFrontMatter` with no approval behind it. `gate approve` keeps separation of duties and
   still refuses an agent session, so the *gate* is sound — it is simply not on the write path.
-- **The windows-latest test job fails.** Two tests in `internal/specframework`:
+- **The windows-latest test job fails** (fixed after the tag — see [Unreleased]). Two tests in
+  `internal/specframework`:
   `TestChangesStubbed` (a fixture that interpolates the repo root into a JSON string literal,
   where Windows backslashes are JSON escapes) and
   `TestRelAcceptsSymlinkedRootAndStillRejectsEscapes` (a rooted path with no drive letter is not
