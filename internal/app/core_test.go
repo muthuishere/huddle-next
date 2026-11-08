@@ -38,6 +38,15 @@ func TestMain(m *testing.M) {
 		"CLAUDE_CONFIG_DIR": filepath.Join(dir, "claude-config"),
 		"CLAUDE_SKILLS_DIR": filepath.Join(dir, "claude-skills"),
 		"AGENTS_SKILLS_DIR": filepath.Join(dir, "agents-skills"),
+		// HOME is not enough. os.UserHomeDir — which internal/paths and
+		// internal/install both call — reads USERPROFILE on Windows and HOME
+		// everywhere else, so a test that sets only HOME still resolves the
+		// legacy config root inside the real user's profile on Windows. That is
+		// the same escape this file already neutralises CLAUDE_CONFIG_DIR for.
+		// Both are set here as a backstop; a test that needs its own home uses
+		// setHome.
+		"HOME":        filepath.Join(dir, "home"),
+		"USERPROFILE": filepath.Join(dir, "home"),
 	} {
 		if err := os.Setenv(k, v); err != nil {
 			fmt.Fprintln(os.Stderr, "test roots:", err)
@@ -54,7 +63,7 @@ func coreEnv(t testing.TB) string {
 	t.Helper()
 	tmp := t.TempDir()
 	t.Setenv("HUDDLE_HOME", filepath.Join(tmp, "huddle-home"))
-	t.Setenv("HOME", filepath.Join(tmp, "home"))
+	setHome(t, filepath.Join(tmp, "home"))
 	t.Setenv("USERPROFILE", filepath.Join(tmp, "home"))
 	root := filepath.Join(tmp, "proj")
 	mustWrite(t, filepath.Join(root, ".git", "HEAD"), "ref: refs/heads/main\n")
@@ -592,5 +601,43 @@ func TestStartEndToEndP50Budget(t *testing.T) {
 	t.Logf("start end-to-end p50=%v p95=%v (budget %v)", p50, p95, budget)
 	if p50 >= budget {
 		t.Fatalf("start end-to-end p50 %v >= %v budget (ADR 13/19)", p50, budget)
+	}
+}
+
+// setHome points every home-directory lookup at dir for the duration of t.
+// os.UserHomeDir reads USERPROFILE on Windows and HOME elsewhere, so setting
+// one of them isolates the suite on one platform and silently leaks to the
+// developer's own profile on the other.
+func setHome(t testing.TB, dir string) {
+	t.Helper()
+	t.Setenv("HOME", dir)
+	t.Setenv("USERPROFILE", dir)
+}
+
+// TestHomeIsolationCoversUserHomeDir is the assertion that was missing, and the
+// reason TestUpgradeReplacesLegacyLinkAndKeepsMemories failed only on Windows:
+// internal/paths and internal/install locate the legacy config root through
+// os.UserHomeDir, which reads USERPROFILE on Windows and HOME elsewhere. A test
+// that set only HOME was therefore isolated on Unix and resolved the real
+// user's profile on Windows — the same class of escape this file already
+// neutralises CLAUDE_CONFIG_DIR for. Asserting on os.UserHomeDir rather than on
+// one variable makes the isolation provable on whichever platform runs it.
+func TestHomeIsolationCoversUserHomeDir(t *testing.T) {
+	dir := t.TempDir()
+	setHome(t, dir)
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		t.Fatalf("UserHomeDir: %v", err)
+	}
+	if home != dir {
+		t.Fatalf("os.UserHomeDir() = %q, want the test dir %q — the suite can reach the real profile", home, dir)
+	}
+	// And the legacy roots huddle would migrate from resolve under it, which is
+	// what the upgrade test depends on.
+	for _, p := range paths.LegacyRoots() {
+		if !strings.HasPrefix(p, dir) {
+			t.Errorf("legacy root %q is outside the test home %q", p, dir)
+		}
 	}
 }
