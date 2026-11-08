@@ -15,7 +15,7 @@ import (
 // loss, so it is asserted here rather than trusted.
 func TestUpgradeReplacesLegacyLinkAndKeepsMemories(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	setHome(t, home)
 	t.Setenv("HUDDLE_HOME", filepath.Join(home, ".config", ".huddle"))
 	skillsDir := filepath.Join(home, ".claude", "skills")
 	t.Setenv("CLAUDE_SKILLS_DIR", skillsDir)
@@ -88,7 +88,7 @@ func TestUpgradeReplacesLegacyLinkAndKeepsMemories(t *testing.T) {
 // or saying anything, on every invocation after the first.
 func TestSyncIsIdempotentAndQuietWhenCurrent(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	setHome(t, home)
 	t.Setenv("HUDDLE_HOME", filepath.Join(home, ".config", ".huddle"))
 	t.Setenv("CLAUDE_SKILLS_DIR", filepath.Join(home, ".claude", "skills"))
 	t.Setenv("AGENTS_SKILLS_DIR", filepath.Join(home, ".agents", "skills"))
@@ -109,7 +109,7 @@ func TestSyncIsIdempotentAndQuietWhenCurrent(t *testing.T) {
 // else owns, however much it would like to.
 func TestSyncLeavesForeignDirsAlone(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	setHome(t, home)
 	t.Setenv("HUDDLE_HOME", filepath.Join(home, ".config", ".huddle"))
 	skillsDir := filepath.Join(home, ".claude", "skills")
 	t.Setenv("CLAUDE_SKILLS_DIR", skillsDir)
@@ -139,7 +139,7 @@ func TestSyncLeavesForeignDirsAlone(t *testing.T) {
 // TestSyncRespectsOptOut covers the env kill switch.
 func TestSyncRespectsOptOut(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	setHome(t, home)
 	t.Setenv("HUDDLE_HOME", filepath.Join(home, ".config", ".huddle"))
 	skillsDir := filepath.Join(home, ".claude", "skills")
 	t.Setenv("CLAUDE_SKILLS_DIR", skillsDir)
